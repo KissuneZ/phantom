@@ -12,8 +12,6 @@ import re
 print(' + Re')
 import asyncio
 print(' + AsyncIO')
-import sqlite3
-print(' + sqLite3')
 import requests
 print(' + Requests')
 import os
