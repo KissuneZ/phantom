@@ -446,6 +446,9 @@ async def on_message(message):
 async def on_ready():
     print('Загрузка завершена!')
     await bot.change_presence(status=discord.Status.dnd,activity=Activity(name='!!help',type=ActivityType.watching))
+    while True:
+        await asyncio.sleep(360)
+        print(f'[AntiAFK] {time.time()}')
 
 print('Выполняется вход...')
 bot.run('ODM3MjgyNDUzNjU0NzMyODEw.YIqSDA.X_0k2aENwjIXWCssOPTKjwuCdHI')
