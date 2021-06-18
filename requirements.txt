@@ -1,4 +1,4 @@
-reqests==2.25.1
+requests==2.25.1
 urllib3==1.26.5
 sqlite3==0.4.6
 datetime==4.3
