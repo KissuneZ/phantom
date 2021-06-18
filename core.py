@@ -228,14 +228,14 @@ async def radio(ctx, url=''):
             voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
             await voice.disconnect()
             try:
-                player = await channel.connect(timeout=10) 
+                player = await channel.connect(timeout=100)
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
                 await ctx.send(embed = emb)
                 return
         else:
             try:
-                player = await channel.connect(timeout=10) 
+                player = await channel.connect(timeout=100) 
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
                 await ctx.send(embed = emb)
@@ -263,8 +263,9 @@ async def play(ctx, *, query=''):
         await ctx.message.guild.voice_client.disconnect()
         await asyncio.sleep(1)
     try:
-        player = await channel.connect(timeout=10) 
-    except:
+        player = await channel.connect(timeout=100) 
+    except Exception as e:
+        print(e)
         emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
@@ -333,7 +334,7 @@ async def stop(ctx):
     if is_connected(ctx):
         await ctx.message.guild.voice_client.disconnect()
         await asyncio.sleep(1)
-        await channel.connect(reconnect=True,timeout=5000)
+        await channel.connect(reconnect=True,timeout=100)
         emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение остановлено.',color=0x000000)
         await ctx.send(embed = emb)
 
