@@ -264,7 +264,7 @@ async def play(ctx, *, query=''):
         await asyncio.sleep(1)
     try:
         player = await channel.connect(timeout=100) 
-    except Exception as e:
+    except:
         print(e)
         emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
         await ctx.send(embed = emb)
