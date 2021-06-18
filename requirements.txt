@@ -1,0 +1,8 @@
+discord
+reqests
+urllib3
+sqlite3
+time
+datetime
+youtube_dl
+pillow
