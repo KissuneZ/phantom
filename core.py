@@ -1,3 +1,11 @@
+# coding=UTF-8
+print('Импорт библиотек...')
+import discord
+print(' + Discord')
+from discord.ext import commands
+print('    + Commands')
+from discord import Activity
+print('    + Activity')
 from discord import ActivityType
 print('    + ActivityType')
 from discord import FFmpegPCMAudio
