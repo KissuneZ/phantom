@@ -1,6 +1,5 @@
 requests==2.25.1
 urllib3==1.26.5
-sqlite3==0.4.6
 datetime==4.3
 youtube_dl==2021.6.6
 pillow==8.2.0
