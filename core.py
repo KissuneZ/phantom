@@ -167,7 +167,7 @@ async def join(ctx):
         if voice:
             await voice.disconnect()
         try:
-            await channel.connect(timeout=1)
+            await channel.connect(timeout=10)
         except:
             emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
             pass
@@ -228,14 +228,14 @@ async def radio(ctx, url=''):
             voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
             await voice.disconnect()
             try:
-                player = await channel.connect(timeout=1) 
+                player = await channel.connect(timeout=10) 
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
                 await ctx.send(embed = emb)
                 return
         else:
             try:
-                player = await channel.connect(timeout=1) 
+                player = await channel.connect(timeout=10) 
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
                 await ctx.send(embed = emb)
@@ -263,9 +263,9 @@ async def play(ctx, *, query=''):
         await ctx.message.guild.voice_client.disconnect()
         await asyncio.sleep(1)
     try:
-        player = await channel.connect(timeout=1) 
+        player = await channel.connect(timeout=10) 
     except:
-        emb = discord.Embed(description=':x: У меня нет доступа к этому голосовму каналу.',color=0xdd2e44)
+        emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
     emb = discord.Embed(description=f'<:phantom_sr:851443028979613716> Выполняется поиск на YouTube:\n```{query}```',color=0x000000)
