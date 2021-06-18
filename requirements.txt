@@ -1,8 +1,7 @@
-reqests>=1.0
-urllib3>=1.0
-sqlite3>=1.0
-time>=1.0
-datetime>=1.0
-youtube_dl>=1.0
-pillow>=1.0
-discord>=1.0.1
+reqests==2.25.1
+urllib3==1.26.5
+sqlite3==0.4.6
+datetime==4.3
+youtube_dl==2021.6.6
+pillow==8.2.0
+discord.py==1.7.3
