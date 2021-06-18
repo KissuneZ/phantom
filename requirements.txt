@@ -1,8 +1,8 @@
-reqests
-urllib3
-sqlite3
-time
-datetime
-youtube_dl
-pillow
-discord
+reqests>=1.0
+urllib3>=1.0
+sqlite3>=1.0
+time>=1.0
+datetime>=1.0
+youtube_dl>=1.0
+pillow>=1.0
+discord>=1.0.1
