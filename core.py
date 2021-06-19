@@ -261,7 +261,7 @@ async def play(ctx, *, query=''):
         return
     channel = ctx.message.author.voice.channel
     voice = get_voice(ctx)
-    if channel != voice.channel:
+    if channel != ctx.message.guild.voice_client.channel:
         emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
