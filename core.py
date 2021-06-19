@@ -228,14 +228,14 @@ async def radio(ctx, url=''):
             voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
             await voice.disconnect()
             try:
-                player = await channel.connect(timeout=100)
+                player = await channel.connect(timeout=10)
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
                 await ctx.send(embed = emb)
                 return
         else:
             try:
-                player = await channel.connect(timeout=100) 
+                player = await channel.connect(timeout=10) 
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
                 await ctx.send(embed = emb)
@@ -264,7 +264,7 @@ async def play(ctx, *, query=''):
         await ctx.message.guild.voice_client.disconnect()
         await asyncio.sleep(1)
     try:
-        player = await channel.connect(timeout=100) 
+        player = await channel.connect(timeout=10) 
     except:
         print(e)
         emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
@@ -290,24 +290,31 @@ async def play(ctx, *, query=''):
             URL = info['formats'][0]['url']
             title = info.get('title', None)
             duration = info.get('duration', None)
-            d = duration
             duration = datetime.timedelta(seconds=duration)
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     audio = discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)
-    if loops.get(ctx.guild.id) == True:
-        await rplay(ctx,audio,player,d)
-        return
-    player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)) 
     await lastmsg.delete()
     emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение:\n```{title} ({duration})```\nСсылка на видео: {url}',color=0x000000)
-    await ctx.send(embed = emb) 
+    await ctx.send(embed = emb)
+    if loops.get(ctx.guild.id) == True:
+        await rplay(ctx,audio)
+        return
+    player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)) 
     
-async def rplay(ctx,audio,player,duration):
+async def rplay(ctx,audio):
     FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-    while True:
-        print(f'Repeating ({audio})')
-        player.play(audio)
-        await asyncio.sleep(duration)
+    global loops
+    if is_connected(ctx):
+        await ctx.message.guild.voice_client.disconnect()
+        await asyncio.sleep(1)
+    try:
+        player = await channel.connect(timeout=10) 
+    except:
+        print(e)
+        return
+    while loops.get(ctx.guild.id) == True:
+        if not player.is_playing():
+            player.play(audio)
 
 @bot.command()
 @commands.cooldown(1, 30, commands.BucketType.user)
