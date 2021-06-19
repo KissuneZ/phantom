@@ -295,7 +295,7 @@ async def play(ctx, *, query=''):
         return
     if is_connected(ctx) and voice.is_playing():
         try:
-            await voice.stop()
+            voice.stop()
         except:
             pass
     await lastmsg.add_reaction('✅')
@@ -409,7 +409,7 @@ async def stop(ctx):
     channel = ctx.voice_client.channel
     if is_connected(ctx) and voice.is_playing():
         if ctx.author.voice:
-            await voice.stop()
+            voice.stop()
             emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение остановлено.',color=0x000000)
             await ctx.send(embed = emb)
         else:
