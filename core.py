@@ -255,21 +255,27 @@ async def play(ctx, *, query=''):
         emb = discord.Embed(description=':x: Использование: `!!play <query>`',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
-    if not ctx.author.voice:
+    if not ctx.message.author.voice:
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
     channel = ctx.message.author.voice.channel
-    if is_connected(ctx):
-        await ctx.message.guild.voice_client.disconnect()
-        await asyncio.sleep(1)
-    try:
-        player = await channel.connect(timeout=10) 
-    except Exception as e:
-        print(e)
-        emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
+    voice = get_voice(ctx)
+    if channel != voice.channel:
+        emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
+    if is_connected(ctx) an voice.is_playing():
+        await voice.stop()
+    if get_voice(ctx) != None:
+        player = get_voice(ctx)
+    else:
+        try:
+            player = await channel.connect(timeout=10)
+        except:
+            emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
+            await ctx.send(embed = emb)
+            return
     emb = discord.Embed(description=f'<:phantom_sr:851443028979613716> Выполняется поиск на YouTube:\n```{query}```',color=0x000000)
     lastmsg = await ctx.send(embed = emb)
     query_string = urllib.parse.urlencode({'search_query': query})
@@ -296,9 +302,6 @@ async def play(ctx, *, query=''):
     await lastmsg.delete()
     emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение:\n```{title} ({duration})```\nСсылка на видео: {url}',color=0x000000)
     await ctx.send(embed = emb)
-    if loops.get(ctx.guild.id) == True:
-        await rplay(ctx,audio)
-        return
     player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)) 
     
 async def rplay(ctx,audio):
@@ -314,8 +317,31 @@ async def rplay(ctx,audio):
         print(e)
         return
     while loops.get(ctx.guild.id) == True:
-        if not player.is_playing():
-            player.play(audio)
+        player.play(audio)
+        
+@bot.command()
+async def pause(ctx):
+    await ctx.message.delete()
+    voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+        emb = discord.Embed(color = 0x000000, description = '<:phantom_ok:837302406060179516> Воспроизведение приостановлено.')
+        await ctx.send(embed = emb)
+    else:
+        emb = discord.Embed(color = 0xdd2e44, description = ':x: Сейчас ничего не играет.')
+        await ctx.send(embed = emb)
+        
+@bot.command(aliases = ['r'])
+async def resume(self, ctx):
+    await ctx.message.delete()
+    voice = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
+    if voice.is_paused():
+        voice.resume()
+        emb = discord.Embed(color = 0x000000, description = 'Воспроизведение продолжено.')
+        await ctx.send(embed = emb)
+    else:
+        emb = discord.Embed(color = 0xdd2e44, description = ':x: Воспроизведение не было приостановлено.')
+        await ctx.send(embed = emb)
 
 @bot.command()
 @commands.cooldown(1, 30, commands.BucketType.user)
@@ -347,21 +373,23 @@ async def stop(ctx):
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
+    voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
     if not ctx.author.voice:
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
     channel = ctx.message.guild.voice_client.channel
-    if is_connected(ctx):
+    if is_connected(ctx) and voice.is_playing():
         if channel == ctx.author.voice.channel:
-            await ctx.message.guild.voice_client.disconnect()
-            await asyncio.sleep(1)
-            await channel.connect(reconnect=True,timeout=100)
+            await voice.stop()
             emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение остановлено.',color=0x000000)
             await ctx.send(embed = emb)
         else:
             emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
             await ctx.send(embed = emb)
+    else:
+        emb = discord.Embed(description=':x: Сейчас ничего не играет.',color=0xdd2e44)
+        await ctx.send(embed = emb)
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -419,6 +447,10 @@ async def ping(ctx,ip = None):
             break
 
 print('Регистрация ивентов...')
+
+def get_voice(ctx):
+    voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+    return voice
 
 def get_status(ctx,ip):
     url = f'https://mc.api.srvcontrol.xyz/server/status?ip={ip}'
