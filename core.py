@@ -265,7 +265,7 @@ async def play(ctx, *, query=''):
         emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
-    if is_connected(ctx) an voice.is_playing():
+    if is_connected(ctx) and voice.is_playing():
         await voice.stop()
     if get_voice(ctx) != None:
         player = get_voice(ctx)
