@@ -5,3 +5,4 @@ youtube_dl==2021.6.6
 pillow==8.2.0
 discord.py==1.7.3
 pynacl==1.4.0
+nekos.py==1.0.3
