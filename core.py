@@ -446,17 +446,23 @@ async def on_command_error(ctx,error):
         pass
     if isinstance(error,commands.MissingPermissions):
         emb = discord.Embed(description=':x: У вас нет прав для вызова этой команды.',color=0xdd2e44)
-        await ctx.send(embed = emb)
+        m = await ctx.send(embed = emb)
+        await asyncio.sleep(3)
+        await m.delete()
     if isinstance(error,commands.MissingRequiredArgument):
         emb = discord.Embed(description=':x: Неправильный синтаксис команды.',color=0xdd2e44)
-        await ctx.send(embed = emb)
+        m = await ctx.send(embed = emb)
+        await asyncio.sleep(3)
+        await m.delete()
     if isinstance(error,commands.CommandInvokeError):
         emb = discord.Embed(description=f':x: Произошла ошибка:\n```{error}```',color=0xdd2e44)
         await ctx.send(embed = emb)
     if isinstance(error, commands.CommandOnCooldown):
         cooldown = round(error.retry_after)
         emb = discord.Embed(description=f':x: Вы сможете использовать эту команду через {cooldown} секунд.',color=0xdd2e44)
-        await ctx.send(embed = emb)
+        m = await ctx.send(embed = emb)
+        await asyncio.sleep(3)
+        await m.delete()
 
 @bot.event
 async def on_message(message):
