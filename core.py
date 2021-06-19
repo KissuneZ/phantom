@@ -247,6 +247,7 @@ async def radio(ctx, url=''):
 @bot.command(pass_context=True, aliases=['p'])
 @commands.cooldown(1, 30, commands.BucketType.user)
 async def play(ctx, *, query=''):
+    global loops
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
@@ -289,12 +290,24 @@ async def play(ctx, *, query=''):
             URL = info['formats'][0]['url']
             title = info.get('title', None)
             duration = info.get('duration', None)
+            d = duration
             duration = datetime.timedelta(seconds=duration)
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    audio = discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)
+    if loops.get(ctx.guild.id) == True:
+        await rplay(ctx,audio,query,d)
+        return
     player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)) 
     await lastmsg.delete()
     emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение:\n```{title} ({duration})```\nСсылка на видео: {url}',color=0x000000)
     await ctx.send(embed = emb) 
+    
+async def rplay(ctx,audio,player,duration):
+    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    while True:
+        print(f'Repeating ({audio})')
+        player.play(audio)
+        await asyncio.sleep(duration)
 
 @bot.command()
 @commands.cooldown(1, 30, commands.BucketType.user)
@@ -332,11 +345,15 @@ async def stop(ctx):
         return
     channel = ctx.message.guild.voice_client.channel
     if is_connected(ctx):
-        await ctx.message.guild.voice_client.disconnect()
-        await asyncio.sleep(1)
-        await channel.connect(reconnect=True,timeout=100)
-        emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение остановлено.',color=0x000000)
-        await ctx.send(embed = emb)
+        if channel == ctx.author.voice.channel:
+            await ctx.message.guild.voice_client.disconnect()
+            await asyncio.sleep(1)
+            await channel.connect(reconnect=True,timeout=100)
+            emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение остановлено.',color=0x000000)
+            await ctx.send(embed = emb)
+        else:
+            emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
+            await ctx.send(embed = emb)
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
