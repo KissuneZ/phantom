@@ -147,7 +147,7 @@ async def clear(ctx,amount:int):
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
-async def avatar(ctx,member:discord.Member=0):
+async def avatar(ctx,member:discord.Member=None):
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
@@ -160,23 +160,34 @@ async def avatar(ctx,member:discord.Member=0):
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
-async def join(ctx):
+async def join(ctx,channel = None):
     e = False
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
     if ctx.author.voice:
-        channel = ctx.author.voice.channel
+        if channel == None:
+            channel = ctx.author.voice.channel
+        else:
+            if isinstance(channel,discord.channel.mention):
+                pass
+            else:
+                channel = ctx.author.voice.channel
         voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
         emb = discord.Embed(description='<:phantom_ok:837302406060179516> Подключен к голосовому каналу.',color=0x000000)
         if voice:
-            await voice.disconnect()
-        try:
-            await channel.connect(timeout=10)
-        except:
-            emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
-            e == True
-            pass
+            vc = ctx.message.guild.voice_client
+            try:
+                await vc.move_to(channel)
+            except:
+                emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
+                e == True
+        else:
+            try:
+                await channel.connect()
+            except:
+                emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
+                e == True
     else:
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
         e = True
@@ -325,22 +336,7 @@ async def play(ctx, *, query=''):
     emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение:\n```{title} ({duration})```\nСсылка на видео: {url}',color=0x000000)
     await ctx.send(embed = emb)
     player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)) 
-    
-async def rplay(ctx,audio):
-    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-    global loops
-    channel = ctx.message.author.voice.channel
-    if is_connected(ctx):
-        await ctx.message.guild.voice_client.disconnect()
-        await asyncio.sleep(1)
-    try:
-        player = await channel.connect(timeout=10) 
-    except Exception as e:
-        print(e)
-        return
-    while loops.get(ctx.guild.id) == True:
-        player.play(audio)
-        
+
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def pause(ctx):
@@ -355,7 +351,7 @@ async def pause(ctx):
         m = await ctx.send(embed = emb)
         await asyncio.sleep(3)
         await m.delete()
-        
+
 @bot.command(aliases = ['r'])
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def resume(ctx):
@@ -390,9 +386,9 @@ async def yt(ctx, *, query=''):
         htm_content = urllib.request.urlopen('http://www.youtube.com/results?' + query_string)
         search_results = re.findall(r'/watch\?v=(.{11})', htm_content.read().decode())
     try:
-        emb = f'`1.` https://youtu.be/{search_results[0]}\n`2.` https://youtu.be/{search_results[1]}\n`3.` https://youtu.be/{search_results[2]}'
+        msg = description=f'`1.` https://youtu.be/{search_results[0]}\n`2.` https://youtu.be/{search_results[1]}\n`3.` https://youtu.be/{search_results[2]}'
         await lastmsg.delete()
-        await ctx.send(embed = emb)
+        await ctx.send(msg)
     except:
         emb = discord.Embed(description=':x: По вашему запросу ничего не найдено.',color=0xdd2e44)
         m = await ctx.send(embed = emb)
@@ -422,24 +418,6 @@ async def stop(ctx):
         m = await ctx.send(embed = emb)
         await asyncio.sleep(2)
         await m.delete()
-
-@bot.command()
-@commands.cooldown(1, 10, commands.BucketType.user)
-async def repeat(ctx):
-    if ctx.message.author.bot:
-        return
-    global loops
-    key = ctx.guild.id
-    loops[key] = loops.get(key)
-    if loops[key] == None:
-        loops[key] = False
-    if loops[key] == False:
-        loops[key] = True
-        await ctx.send(':x: Эта функция на данный момент в разработке')
-        return
-    if loops[key] == True:
-        loops[key] = False
-        await ctx.send(':x: Эта функция на данный момент в разработке')
 
 @bot.command()
 @commands.cooldown(1, 30, commands.BucketType.user)
@@ -510,7 +488,7 @@ def get_status(ctx,ip):
 def is_connected(ctx):
     voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
     return voice_client and voice_client.is_connected()
-    
+
 @bot.event
 async def on_command_error(ctx,error):
     print(error)
@@ -548,6 +526,24 @@ async def on_message(message):
     if message.content == f'<@!{bot.user.id}>':
         await message.channel.send(embed=emb)
     await bot.process_commands(message)
+    
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def repeat(ctx):
+    if ctx.message.author.bot:
+        return
+    global loops
+    key = ctx.guild.id
+    loops[key] = loops.get(key)
+    if loops[key] == None:
+        loops[key] = False
+    if loops[key] == False:
+        loops[key] = True
+        await ctx.send(':x: Эта функция на данный момент в разработке')
+        return
+    if loops[key] == True:
+        loops[key] = False
+        await ctx.send(':x: Эта функция на данный момент в разработке')
 
 @bot.event
 async def on_ready():
