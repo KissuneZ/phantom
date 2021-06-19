@@ -521,11 +521,14 @@ async def on_command_error(ctx,error):
 
 @bot.event
 async def on_message(message):
+    if message.author.bot:
+        return
     emb_content = f'{message.author.mention}, используйте `!!help` для вывода списка команд.'
     emb = discord.Embed(description=emb_content,color=0x000000)
     if message.content == f'<@!{bot.user.id}>':
         await message.channel.send(embed=emb)
     await bot.process_commands(message)
+    await asyncio.sleep(15)
     
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
