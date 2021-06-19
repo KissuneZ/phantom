@@ -295,7 +295,7 @@ async def play(ctx, *, query=''):
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     audio = discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)
     if loops.get(ctx.guild.id) == True:
-        await rplay(ctx,audio,query,d)
+        await rplay(ctx,audio,player,d)
         return
     player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)) 
     await lastmsg.delete()
