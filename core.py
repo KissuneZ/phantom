@@ -255,11 +255,11 @@ async def play(ctx, *, query=''):
         emb = discord.Embed(description=':x: Использование: `!!play <query>`',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
-    if not ctx.message.author.voice:
+    if not ctx.author.voice:
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
         await ctx.send(embed = emb)
         return
-    channel = ctx.message.author.voice.channel
+    channel = ctx.author.voice.channel
     voice = get_voice(ctx)
     if channel != ctx.message.guild.voice_client.channel:
         emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
