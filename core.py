@@ -304,6 +304,7 @@ async def play(ctx, *, query=''):
 async def rplay(ctx,audio):
     FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     global loops
+    channel = ctx.message.author.voice.channel
     if is_connected(ctx):
         await ctx.message.guild.voice_client.disconnect()
         await asyncio.sleep(1)
