@@ -357,16 +357,15 @@ async def play(ctx, *, query=''):
             await ctx.send(embed = emb,delete_after=2)
             return
     async with ctx.typing():
-        ydl_opts = {'format': 'bestaudio'}
+        ydl_opts = {'format': 'worstaudio'}
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             URL = info['formats'][0]['url']
             title = info.get('title', None)
             duration = info.get('duration', None)
-            d = duration
-            duration = datetime.timedelta(seconds=duration)
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-    audio = discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS)
+    d = duration
+    duration = datetime.timedelta(seconds=duration)
     await lastmsg.delete()
     emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение:\n```{title} ({duration})```\nСсылка на видео: {url}',color=0x000000)
     await ctx.send(embed = emb)
