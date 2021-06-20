@@ -510,7 +510,7 @@ async def nsfw(ctx, req='lewd'):
     except:
         tags = '`anal` `bj` `blowjob` `boobs` `classic` `cum` `eroyuri` `feet` `femdom` `futanari` `haloero` `hentai` `hentaigif` `keta` `kuni` `lewd` `ngif` `pussy` `pwankg` `sex` `solo` `spank` `tits` `trap` `waifu` `yuri`'
         emb = discord.Embed(description=f':x: Использование: `!!nsfw [tag]`.\nДоступные теги: {tags}',color=0xdd2e44)
-        await ctx.send(embed = emb,delete_after=2)
+        await ctx.send(embed = emb,delete_after=8)
         return
 
     emb = discord.Embed(color=0x000000)
