@@ -39,21 +39,51 @@ import youtube_dl
 print('Успешно!')
 print('Инициализация...')
 
-global loops
+import nekos
+global loops, nullTime
+nullTime = time.time()
 loops = {}
 bot = commands.Bot('!!')
 bot.remove_command('help')
 print('Регистрация асинхронных команд...')
 
 @bot.command()
-@commands.cooldown(1, 10, commands.BucketType.user)
-async def help(ctx):
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def help(ctx,page=0):
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
-    emb = discord.Embed(title='Доступные команды',description='`!!kick <member>` - кикнуть пользователя\n`!!ban <member>` - забанить пользователя\n`!!unban <member>` - разбанить пользователя\n`!!mute <member> [minutes]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние X сообщений в текущем канале\n`!!avatar [member]` - вывести аватар пользователя\n`!!join` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!yt <query>` - найти видео на YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить текст как Embed',color=0x000000)
+    if page == 0 or page > 3:
+        emb = discord.Embed(title='Доступные категории команд',description='`1.` Модерация\n`2.` Музыка\n`3.` Разное\n\nИспользуйте `!!help [page]` для вывода списка команд из этой категории.',color=0x000000)
+        emb.set_footer(text = '© 2021 Sweety187 | Все права защищены.',icon_url = 'https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
+        await ctx.send(embed = emb)
+        return
+    mod = '`!!kick <member>` - кикнуть пользователя\n`!!ban <member>` - забанить пользователя\n`!!unban <member>` - разбанить пользователя\n`!!mute <member> [minutes]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние N сообщений в канале'
+    music = '`!!join` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение'
+    misc = '`!!avatar [member]` - вывести аватар пользователя\n`!!yt <query>` - найти видео на YouTube\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить текст как Embed\n`!!neko` - случайная картинка с неко\n`!!cat` - случайная картинка с котом\n`!!nsfw [tag]` - хентай-картинка с указаным жанром (по умолчанию «lewd»)\n`!!status` - статистика бота'
+    pages = [mod,music,misc]
+    titles = ['Модерация','Музыка','Разное']
+    emb = discord.Embed(title=titles[page-1],description=pages[page-1],color=0x000000)
     emb.set_footer(text = '© 2021 Sweety187 | Все права защищены.',icon_url = 'https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
     await ctx.send(embed = emb)
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def status(ctx):
+    global nullTime
+    t = int(time.time() - nullTime)
+    t = datetime.timedelta(seconds=t)
+    e = discord.Embed(title="Статистика бота",color=0x000000)
+    e.add_field(name='Аптайм',value=t,inline=True)
+    e.add_field(name='Версия',value='9.3.4',inline=True)
+    e.add_field(name='Серверов',value=len(bot.guilds),inline=True)
+    mc = 0
+    for guild in bot.guilds:
+        mc = mc + guild.member_count
+    e.add_field(name='Пользователей',value=mc,inline=True)
+    e.set_thumbnail(url="https://www.rite-solutions.com/wp-content/uploads/2018/11/SoS-Icon-1200x1200.png")
+    e.set_footer(text = '© 2021 Sweety187 | Все права защищены.',icon_url = 'https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
+    await ctx.send(embed = e)
 
 @bot.command()
 @commands.has_permissions(view_audit_log=True)
@@ -68,21 +98,28 @@ async def mute(ctx,member:discord.Member,time:float=0.0):
         if ctx.guild.me.guild_permissions.manage_roles:
             perms = discord.Permissions()
             perms.update(send_messages = False, change_nickname=False, send_tts_messages=False, speak=False, request_to_speak=False)
-            await guild.create_role(name="Muted")
+            try:
+                await guild.create_role(name="Muted")
+            except:
+                await permerror(ctx)
+                return
             muterole = discord.utils.get(ctx.guild.roles,name='Muted')
             pos = ctx.guild.me.top_role.position - 1
             await muterole.edit(permissions=perms,position=pos)
-    else:
-        muterole = discord.utils.get(ctx.guild.roles,name='Muted')
-        emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> {member.mention} замучен на `{time}` мин.',color=0x000000)
+    muterole = discord.utils.get(ctx.guild.roles,name='Muted')
+    emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> {member.mention} замучен на `{time}` мин.',color=0x000000)
+    try:
         await member.add_roles(muterole)
-        if time <= 0.0:
-            emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> {member.mention} замучен навсегда.',color=0x000000)
-            await ctx.send(embed = emb)
-        else:
-            await ctx.send(embed = emb)
-            await asyncio.sleep(time * 60)
-            await member.remove_roles(muterole)
+    except:
+        await permerror(ctx)
+        return
+    if time <= 0.0:
+        emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> {member.mention} замучен навсегда.',color=0x000000)
+        await ctx.send(embed = emb)
+    else:
+        await ctx.send(embed = emb)
+        await asyncio.sleep(time * 60)
+        await member.remove_roles(muterole)
 
 @bot.command()
 @commands.has_permissions(view_audit_log=True)
@@ -93,7 +130,11 @@ async def unmute(ctx,member:discord.Member):
     await ctx.message.delete()
     muterole = discord.utils.get(ctx.guild.roles,name='Muted')
     emb = discord.Embed(description='<:phantom_ok:837302406060179516> '+member.mention+' размучен.',color=0x000000)
-    await member.remove_roles(muterole)
+    try:
+        await member.remove_roles(muterole)
+    except:
+        await permerror(ctx)
+        return
     await ctx.send(embed = emb)
 
 @bot.command()
@@ -104,7 +145,11 @@ async def kick(ctx,member:discord.Member):
         return
     await ctx.message.delete()
     emb = discord.Embed(description='<:phantom_ok:837302406060179516> '+member.mention+' кикнут.',color=0x000000)
-    await member.kick()
+    try:
+        await member.kick()
+    except:
+        await permerror(ctx)
+        return
     await ctx.send(embed = emb)
 
 @bot.command()
@@ -115,7 +160,11 @@ async def ban(ctx,member:discord.Member):
         return
     await ctx.message.delete()
     emb = discord.Embed(description='<:phantom_ok:837302406060179516> '+member.mention+' забанен.',color=0x000000)
-    await member.ban()
+    try:
+        await member.ban()
+    except:
+        await permerror(ctx)
+        return
     await ctx.send(embed = emb)
 
 @bot.command()
@@ -125,7 +174,11 @@ async def unban(ctx,member:discord.Member):
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
-    await member.unban()
+    try:
+        await member.unban()
+    except:
+        await permerror(ctx)
+        return
     emb = discord.Embed(description='<:phantom_ok:837302406060179516> '+member.mention+' разбанен.',color=0x000000)
     await ctx.send(embed = emb)
 
@@ -138,12 +191,10 @@ async def clear(ctx,amount:int):
     await ctx.message.delete()
     if amount <= 100:
         deleted = await ctx.message.channel.purge(limit=amount)
-        emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Очищено `{amount}` сообщений.',color=0x000000)
+        emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Удалено `{len(deleted)}` сообщений.',color=0x000000)
     else:
         emb = discord.Embed(description=f':x: Вы не можете назначить более 100 сообщний для удаления.',color=0xdd2e44)
-    m = await ctx.send(embed = emb)
-    await asyncio.sleep(2)
-    await m.delete()
+    await ctx.send(embed = emb,delete_after=2)
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -160,7 +211,7 @@ async def avatar(ctx,member:discord.Member=None):
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
-async def join(ctx,channel = None):
+async def join(ctx,channel:discord.VoiceChannel = None):
     e = False
     if ctx.message.author.bot:
         return
@@ -169,10 +220,7 @@ async def join(ctx,channel = None):
         if channel == None:
             channel = ctx.author.voice.channel
         else:
-            if isinstance(channel,discord.channel.mention):
-                pass
-            else:
-                channel = ctx.author.voice.channel
+            pass
         voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
         emb = discord.Embed(description='<:phantom_ok:837302406060179516> Подключен к голосовому каналу.',color=0x000000)
         if voice:
@@ -209,9 +257,7 @@ async def leave(ctx):
         await ctx.send(embed = emb)
     else:
         emb = discord.Embed(description=':x: Я не подключен к голосовому каналу на этом сервере.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -242,9 +288,7 @@ async def radio(ctx, url=''):
         return
     if not ctx.author.voice:
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=3)
         return
     if ctx.message.author.voice:
         channel = ctx.author.voice.channel
@@ -252,7 +296,7 @@ async def radio(ctx, url=''):
             voice = get_voice(ctx)
             player = voice
             try:
-                await voice.stop()
+                voice.stop()
             except:
                 pass
         else:
@@ -260,9 +304,7 @@ async def radio(ctx, url=''):
                 player = await channel.connect(timeout=10) 
             except:
                 emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
-                m = await ctx.send(embed = emb)
-                await asyncio.sleep(3)
-                await m.delete()
+                await ctx.send(embed = emb,delete_after=2)
                 return
     player.play(FFmpegPCMAudio(url))
     emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Воспроизведение:\n```{url}```',color=0x000000)
@@ -277,15 +319,11 @@ async def play(ctx, *, query=''):
     await ctx.message.delete()
     if not query:
         emb = discord.Embed(description=':x: Использование: `!!play <query>`',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        m = await ctx.send(embed = emb,delete_after=2)
         return
     if not ctx.author.voice:
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
         return
     channel = ctx.author.voice.channel
     voice = get_voice(ctx)
@@ -300,9 +338,7 @@ async def play(ctx, *, query=''):
         pass
         await lastmsg.delete()
         emb = discord.Embed(description=':x: По вашему запросу ничего не найдено.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
         return
     if is_connected(ctx) and voice.is_playing():
         try:
@@ -318,9 +354,7 @@ async def play(ctx, *, query=''):
         except:
             await lastmsg.delete()
             emb = discord.Embed(description=':x: Не удалось подключиться к голосовому каналу.',color=0xdd2e44)
-            m = await ctx.send(embed = emb)
-            await asyncio.sleep(3)
-            await m.delete()
+            await ctx.send(embed = emb,delete_after=2)
             return
     async with ctx.typing():
         ydl_opts = {'format': 'bestaudio'}
@@ -348,9 +382,7 @@ async def pause(ctx):
         await ctx.send(embed = emb)
     else:
         emb = discord.Embed(color = 0xdd2e44, description = ':x: Сейчас ничего не играет.')
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
 
 @bot.command(aliases = ['r'])
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -363,9 +395,7 @@ async def resume(ctx):
         await ctx.send(embed = emb)
     else:
         emb = discord.Embed(color = 0xdd2e44, description = ':x: Воспроизведение не было приостановлено.')
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
 
 @bot.command()
 @commands.cooldown(1, 30, commands.BucketType.user)
@@ -375,9 +405,7 @@ async def yt(ctx, *, query=''):
     await ctx.message.delete()
     if not query:
         emb = discord.Embed(description=':x: Использование: `!!yt <query>`',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
         return
     emb = discord.Embed(description=f'<:phantom_sr:851443028979613716> Выполняется поиск на YouTube:\n```{query}```',color=0x000000)
     lastmsg = await ctx.send(embed = emb)
@@ -391,9 +419,7 @@ async def yt(ctx, *, query=''):
         await ctx.send(msg)
     except:
         emb = discord.Embed(description=':x: По вашему запросу ничего не найдено.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(3)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -410,14 +436,10 @@ async def stop(ctx):
             await ctx.send(embed = emb)
         else:
             emb = discord.Embed(description=':x: Вы должны находиться в том же голосовом канале, что и бот.',color=0xdd2e44)
-            m = await ctx.send(embed = emb)
-            await asyncio.sleep(3)
-            await m.delete()
+            await ctx.send(embed = emb,delete_after=2)
     else:
         emb = discord.Embed(description=':x: Сейчас ничего не играет.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(2)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
 
 @bot.command()
 @commands.cooldown(1, 30, commands.BucketType.user)
@@ -445,9 +467,7 @@ async def ping(ctx,ip = None):
         pass
         return
     emb = discord.Embed(description = '<:phantom_ok:837302406060179516> Закреплено! Каждые 5 минут информация о сервере будет обновляться.',color=0x000000)
-    msg = await ctx.send(embed = emb)
-    await asyncio.sleep(5)
-    await msg.delete()
+    await ctx.send(embed = emb,delete_after=4)
     while True:
         emb = get_status(ctx,ip)
         await asyncio.sleep(360)
@@ -456,6 +476,47 @@ async def ping(ctx,ip = None):
         except:
             break
 
+@bot.command()
+@commands.cooldown(1, 30, commands.BucketType.user)
+async def cat(ctx):
+    if ctx.message.author.bot:
+        return
+    await ctx.message.delete()
+    link=nekos.cat()
+    emb = discord.Embed(color=0x00000)
+    emb.set_image(url = link)
+    await ctx.send(embed = emb)
+
+@bot.command()
+@commands.cooldown(1, 30, commands.BucketType.user)
+async def neko(ctx):
+    if ctx.message.author.bot:
+        return
+    await ctx.message.delete()
+    link = nekos.img('neko')
+    emb = discord.Embed(color=0x00000)
+    emb.set_image(url = link)
+    await ctx.send(embed = emb)
+
+@bot.command()
+@commands.is_nsfw()
+@commands.cooldown(1, 30, commands.BucketType.user)
+async def nsfw(ctx, req='lewd'):
+    if ctx.message.author.bot:
+        return
+    await ctx.message.delete()
+    try:
+        link = nekos.img(req)
+    except:
+        tags = '`anal` `bj` `blowjob` `boobs` `classic` `cum` `eroyuri` `feet` `femdom` `futanari` `haloero` `hentai` `hentaigif` `keta` `kuni` `lewd` `ngif` `pussy` `pwankg` `sex` `solo` `spank` `tits` `trap` `waifu` `yuri`'
+        emb = discord.Embed(description=f':x: Использование: `!!nsfw [tag]`.\nДоступные теги: {tags}',color=0xdd2e44)
+        await ctx.send(embed = emb,delete_after=2)
+        return
+
+    emb = discord.Embed(color=0x000000)
+    emb.set_image(url = link)
+    await ctx.send(embed = emb)
+    
 print('Регистрация ивентов...')
 
 def get_voice(ctx):
@@ -489,6 +550,10 @@ def is_connected(ctx):
     voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
     return voice_client and voice_client.is_connected()
 
+async def permerror(ctx):
+    emb = discord.Embed(description=':x: У меня нет прав для выполнения этой команды.',color=0xdd2e44)
+    await ctx.send(embed = emb,delete_after=2)
+
 @bot.event
 async def on_command_error(ctx,error):
     print(error)
@@ -496,15 +561,11 @@ async def on_command_error(ctx,error):
         pass
     if isinstance(error,commands.MissingPermissions):
         emb = discord.Embed(description=':x: У вас нет прав для вызова этой команды.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(2)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
         return
     if isinstance(error,commands.MissingRequiredArgument):
         emb = discord.Embed(description=':x: Неправильный синтаксис команды.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(2)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
         return
     if isinstance(error,commands.CommandInvokeError):
         emb = discord.Embed(description=f':x: Произошла ошибка:\n```{error}```',color=0xdd2e44)
@@ -514,9 +575,12 @@ async def on_command_error(ctx,error):
         cooldown = round(error.retry_after)
         await ctx.message.delete()
         emb = discord.Embed(description=f':x: Вы сможете использовать эту команду через {cooldown} секунд.',color=0xdd2e44)
-        m = await ctx.send(embed = emb)
-        await asyncio.sleep(2)
-        await m.delete()
+        await ctx.send(embed = emb,delete_after=2)
+        return
+    if isinstance(error, commands.errors.NSFWChannelRequired):
+        await ctx.message.delete()
+        emb = discord.Embed(description=':x: Эта команда может быть выполнена только в NSFW канале.',color=0xdd2e44)
+        await ctx.send(embed=emb,delete_after=2)
         return
 
 @bot.event
@@ -526,10 +590,9 @@ async def on_message(message):
     emb_content = f'{message.author.mention}, используйте `!!help` для вывода списка команд.'
     emb = discord.Embed(description=emb_content,color=0x000000)
     if message.content == f'<@!{bot.user.id}>':
-        await message.channel.send(embed=emb)
+        await message.channel.send(embed=emb,delete_after=2)
     await bot.process_commands(message)
-    await asyncio.sleep(15)
-    
+
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def repeat(ctx):
@@ -551,10 +614,14 @@ async def repeat(ctx):
 @bot.event
 async def on_ready():
     print('Загрузка завершена!')
-    await bot.change_presence(status=discord.Status.dnd,activity=Activity(name='!!help',type=ActivityType.watching))
+    #await bot.change_presence(status=discord.Status.dnd,activity=Activity(name=s,type=ActivityType.watching))
     while True:
+        s = f'!!help | [{len(bot.guilds)}]'
+        await bot.change_presence(activity=discord.Streaming(name=s, url="https://www.youtube.com/watch?v=wq0OaK6dMEo"))
         await asyncio.sleep(360)
         print(f'[HerokuAntiSleep] {time.time()}')
 
 print('Выполняется вход...')
+intents = discord.Intents.default()
+intents.members = True
 bot.run('ODM3MjgyNDUzNjU0NzMyODEw.YIqSDA.X_0k2aENwjIXWCssOPTKjwuCdHI')
