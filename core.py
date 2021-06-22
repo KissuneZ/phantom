@@ -178,7 +178,7 @@ async def unban(ctx,member:discord.Member):
     emb = discord.Embed(description='<:phantom_ok:837302406060179516> '+member.mention+' разбанен.',color=0x000000)
     await ctx.send(embed = emb)
 
-@bot.command()
+@bot.command(aliases=['purge'])
 @commands.has_permissions(manage_messages=True)
 @commands.cooldown(1, 30, commands.BucketType.user)
 async def clear(ctx,amount:int):
@@ -275,6 +275,7 @@ async def embed(ctx,*,text):
 @bot.command()
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def radio(ctx, url=''):
+    global loops
     if ctx.message.author.bot:
         return
     await ctx.message.delete()
@@ -286,10 +287,15 @@ async def radio(ctx, url=''):
         emb = discord.Embed(description=':x: Вы должны находиться в голосовом канале для вызова этой команды.',color=0xdd2e44)
         await ctx.send(embed = emb,delete_after=3)
         return
+    voice = get_voice(ctx)
+    try:
+        if voice.is_playing() and loops.get(ctx.guild.id) == True:
+            emb = discord.Embed(description=':x: Сначала остановите воспроизведение',color=0xdd2e44)
+            await ctx.send(embed = emb,delete_after=3)
+            return
     if ctx.message.author.voice:
         channel = ctx.author.voice.channel
         if is_connected(ctx):
-            voice = get_voice(ctx)
             player = voice
             try:
                 voice.stop()
