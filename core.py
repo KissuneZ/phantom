@@ -293,6 +293,8 @@ async def radio(ctx, url=''):
             emb = discord.Embed(description=':x: Сначала остановите воспроизведение',color=0xdd2e44)
             await ctx.send(embed = emb,delete_after=3)
             return
+    except:
+        pass
     if ctx.message.author.voice:
         channel = ctx.author.voice.channel
         if is_connected(ctx):
