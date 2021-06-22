@@ -70,7 +70,7 @@ async def status(ctx):
     t = datetime.timedelta(seconds=t)
     e = discord.Embed(title="Статистика бота",color=0x000000)
     e.add_field(name='Аптайм',value=t,inline=True)
-    e.add_field(name='Версия',value='9.5.4',inline=True)
+    e.add_field(name='Версия',value='9.7.1',inline=True)
     e.add_field(name='Серверов',value=len(bot.guilds),inline=True)
     mc = 0
     for guild in bot.guilds:
