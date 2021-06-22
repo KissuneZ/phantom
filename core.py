@@ -527,6 +527,7 @@ async def ping(ctx,ip = None):
         await asyncio.sleep(1)
         reaction = await bot.wait_for('reaction_add', timeout=30.0, check=check)
     except asyncio.TimeoutError as error:
+        await lastmsg.remove_reaction('📌',bot.user)
         pass
         return
     emb = discord.Embed(description = '<:phantom_ok:837302406060179516> Закреплено! Каждые 5 минут информация о сервере будет обновляться.',color=0x000000)
