@@ -296,7 +296,7 @@ async def timer(ctx,time:float):
     await asyncio.sleep(time*60)
     m = await ctx.send(ctx.author.mention)
     await m.delete()
-    emb = discord.Embed(description=f'<:phantom_ok:837302406060179516> Прошло `{time}` минут!',color=0x000000)
+    emb = discord.Embed(description=f'<:phantom_wr:857262088068792350> Прошло `{time}` минут!',color=0x000000)
     await ctx.send(embed = emb)
 
 @bot.command()
