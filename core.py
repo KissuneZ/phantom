@@ -238,7 +238,7 @@ async def clear(ctx, amount):
         except:
             await permerror(ctx)
             return
-        emb = discord.Embed(description = f'<:phantom_ok:837302406060179516> Удалено `{len(deleted)}` сообщений.', color = 0x000000)
+        emb = discord.Embed(description = f'<:phantom_ok:837302406060179516> Удалено `{len(deleted)-1}` сообщений.', color = 0x000000)
     else:
         emb = discord.Embed(description = f':x: Нельзя назначить более 100 сообщний для удаления.', color = 0xdd2e44)
     await ctx.send(embed = emb, delete_after = 2)
