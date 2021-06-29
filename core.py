@@ -867,7 +867,10 @@ def cts(s):
 async def on_message(message):
     if message.author.bot:
         return
-    print(f"{message.guild.name} | {message.author}: {message.content}")
+    try:
+      print(f"{message.guild.name} | {message.author}: {message.content}")
+    except:
+        pass
     emb_content = f'{message.author.mention}, используйте `!!help` для вывода списка команд.'
     emb = discord.Embed(description = emb_content, color = 0x000000)
     if message.content == f'<@!{bot.user.id}>':
