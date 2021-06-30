@@ -115,7 +115,7 @@ async def about(ctx):
 @commands.cooldown(1, 1800, commands.BucketType.user)
 async def bug(ctx, *, message):
     guild = discord.utils.get(bot.guilds, id = 859735750555992064)
-    channel = discord.utils.get(guild.channels, id = 859738135624679434)
+    channel = discord.utils.get(guild.channels, id = 859838257542201365)
     emb = discord.Embed(title = "Сообщение об ошибке", color = 0x000000)
     emb.add_field(name = "Автор", value = ctx.author, inline = False)
     emb.add_field(name = "Сообщение", value = message, inline = False)
