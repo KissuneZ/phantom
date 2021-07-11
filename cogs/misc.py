@@ -41,7 +41,7 @@ class misc(commands.Cog):
 		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
 		users = 0
 		for guild in self.bot.guilds:
-			users =+ guild.member_count
+			users = users + guild.member_count
 		e.add_field(name='Пользователей', value=users, inline=True)
 		e.add_field(name='Нагрузка',
 					value=f'ЦП: {psutil.cpu_percent()}% ОЗУ: {psutil.virtual_memory().percent}%',
