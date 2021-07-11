@@ -12,7 +12,6 @@ import psutil
 import config
 intents = discord.Intents().all()
 bot = commands.Bot('!!', shard_count=1, case_insensitive=True, intents=intents)
-bot.remove_command('help')
 
 def do_load():
     bot.load_extension("cogs.mod")
@@ -27,7 +26,7 @@ def do_unload():
     bot.unload_extension("cogs.music")
     bot.unload_extension("cogs.misc")
 
-
+bot.remove_command('help')
 do_load()
 
 
