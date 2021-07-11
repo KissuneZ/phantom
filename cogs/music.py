@@ -1,132 +1,253 @@
 import discord
 from discord.ext import commands
-import nekos
-import time
+from discord import FFmpegPCMAudio
+import urllib
+from urllib import parse
+from urllib import request
+from urllib.request import urlopen
+import asyncio
+from requests import get
 import datetime
-import psutil
-bot_invite_link = "https://discord.com/api/oauth2/authorize?client_id=837282453654732810&permissions=8&scope=bot"
-nullTime = time.time()
+import requests
+import youtube_dl
+import re
+import json
+loops = {}
+nowPlaying = {}
+__bopts__ = '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 10'
+FFMPEG_OPTIONS = {'before_options': __bopts__,
+				  'options': '-vn'}
+__data__ = requests.get("https://espradio.ru/stream_list.json")
+list = __data__.text
 
-class misc(commands.Cog):
+
+class Music(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
+	@commands.command(aliases=['summon'])
+	async def join(self, ctx, *, channel=None):
+		"""Подключиться к голосовому каналу"""
+		channel = gc(ctx, channel)
+		if channel == 1:
+			await error(ctx, 'Канал не найден.')
+			return
+		if channel == 2:
+			await error(ctx, 'Вы должны быть в голосовом канале для вызова этой комнды.')
+			return
+		e = False
+		voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+		msg = f'Подключен к голосовому каналу.'
+		if voice:
+			vc = ctx.message.guild.voice_client
+			try:
+				await vc.move_to(channel)
+			except:
+				msg = 'Не удалось подключиться к голосовому каналу.'
+				e = True
+		else:
+			try:
+				await channel.connect(timeout=1, reconnect=True)
+			except:
+				msg = 'Не удалось подключиться к голосовому каналу.'
+				e = True
+		if e:
+			await error(ctx, msg)
+			return
+		await rts(ctx)
+		await success(ctx, msg)
+
 	@commands.command()
-	async def help(self, ctx, page=0):
-		if not page or page > 4:
-			default = '`1.` Модерация\n`2.` Музыка\n`3.` Утилиты\n`4.` Прочее\n\nИспользуйте `!!help [page]` для просмотра списка команд из этой категории. Что нового: `!!about`. [Сервер поддержки](https://discord.gg/fj4vCdFVw3).'
-			e = discord.Embed()
-			e.add_field(name='Доступные категории команд', value=default)
-			e.set_footer(text='© 2021 Sweety187 | Все права защищены.', icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
+	async def leave(self, ctx):
+		"""Покинуть голосовой канал"""
+		if is_connected(ctx):
+			vc = ctx.message.guild.voice_client
+			await vc.disconnect()
+			await success(ctx, 'Отключен от голосового канала.')
+		else:
+			await error(ctx, 'Я не подключен к голосовому каналу на этом сервере.')
+
+	@commands.command(aliases=['p'])
+	async def play(self, ctx, *, query):
+		"""Проигрывает музыку с YouTube"""
+		if not ctx.author.voice:
+			await error(ctx, 'Вы должны быть в голосовом канале для вызова этой команды.')
+			return
+		e = discord.Embed(description=f"Выполняется поиск на YouTube:```{query}```")
+		msg = await ctx.send(embed=e)
+		async with ctx.typing():
+			results = ytsearch(query)
+		try:
+			url = f'https://youtu.be/{results[0]}'
+		except IndexError:
+			await msg.delete()
+			await error(ctx, 'По вашему запросу ничего не найдено.')
+			return
+		channel = ctx.author.voice.channel
+		voice = get_voice(ctx)
+		if is_connected(ctx):
+			player = voice
+		else:
+			try:
+				player = await channel.connect(timeout=1, reconnect=True)
+			except:
+				await error(ctx, f'Не удалось подключиться к <#{channel.id}>!')
+				return
+		await rts(ctx)
+		async with ctx.typing():
+			ydl_opts = {'format': 'worstaudio'}
+			ydl = youtube_dl.YoutubeDL(ydl_opts)
+			ydl.add_default_info_extractors()
+			with ydl:
+				info = ydl.extract_info(url, download=False)
+				URL = info['formats'][0]['url']
+				title = info.get('title', None)
+				duration = info.get('duration', None)
+			dur = duration
+			if nowPlaying.get(ctx.guild.id) != url:
+				nowPlaying[ctx.guild.id] = url
+			duration = datetime.timedelta(seconds=duration)
+			i = True
+		while loops.get(ctx.guild.id) or i:
+			voicestop(voice)
+			player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+			if i:
+				title = title.replace("`", "\`").replace("*", "\*")
+				title = title.replace("~", "\~").replace("_", "\_")
+				await msg.delete()
+				await success(ctx, f'''Воспроизведение:
+									   ```{title} ({duration})```
+									   Ссылка на видео: {url}''')
+				i = False
+			await asyncio.sleep(dur + 1)
+			if nowPlaying.get(ctx.guild.id) != url or not is_connected(ctx):
+				break
+
+	@commands.command(aliases=['skip'])
+	async def stop(self, ctx):
+		"""Остановить плеер"""
+		if not ctx.author.voice:
+			await error(ctx, 'Вы должны быть в голосовом канале для вызова этой команды.')
+			return
+		voice = get_voice(ctx)
+		if is_connected(ctx) and voice.is_playing():
+			voice.stop()
+			if loops.get(ctx.guild.id) and nowPlaying.get(ctx.guild.id):
+				nowPlaying[ctx.guild.id] = None
+			await success(ctx, 'Воспроизведение остановлено.')
+		else:
+			await error(ctx, 'Сейчас ничего не играет.')
+
+	@commands.command()
+	async def pause(self, ctx):
+		"""Приостановить воспроизведение"""
+		if not ctx.author.voice:
+			await error(ctx, "Вы должны быть в голосовом канале для вызова этой команды.")
+			return
+		voice = get_voice(ctx)
+		try:
+			voice.pause()
+			await success(ctx, 'Воспроизведение приостановлено.')
+		except:
+			await error(ctx, 'Сейчас ничего не играет.')
+
+	@commands.command()
+	async def resume(self, ctx):
+		"""Продолжить воспроизведение"""
+		if not ctx.author.voice:
+			await error(ctx, 'Вы должны быть в голосовом канале.')
+			return
+		voice = get_voice(ctx)
+		try:
+			voice.resume()
+			await success(ctx, 'Воспроизведение продолжено.')
+		except:
+			await error(ctx, 'Воспроизведение не было приостановлено.')
+
+	@commands.command(aliases=['repeat'])
+	async def loop(self, ctx):
+		"""Зациклить воспроизведение"""
+		if not ctx.author.voice:
+			await error(ctx, 'Вы должны быть в голосовом канале для вызова этой команды.')
+			return
+		key = ctx.guild.id
+		loops[key] = loops.get(key)
+		if not loops[key]:
+			loops[key] = True
+			await success(ctx, 'Воспроизведение зациклено.')
+			return
+		if loops[key]:
+			loops[key] = False
+			await success(ctx, 'Стандартный режим воспроизведения.')
+
+	@commands.command()
+	async def radio(self, ctx, url):
+		if not url or not re.findall(f"\"url\":\"{url}\"", list):
+			await error(ctx, 'Использование: `!!radio <url>`\nСписок станций: https://espradio.ru/stream_list')
+			return
+		if not ctx.author.voice:
+			await error(ctx, 'Вы должны быть в голосовом канале для вызова этой команды.')
+			return
+		voice = get_voice(ctx)
+		if nowPlaying.get(ctx.guild.id) != url:
+			nowPlaying[ctx.guild.id] = url
+		if ctx.message.author.voice:
+			channel = ctx.author.voice.channel
+			if is_connected(ctx):
+				player = voice
+				voicestop(player)
+			else:
+				try:
+					player = await channel.connect(timeout=1, reconnect=True) 
+				except:
+					await error(ctx, 'Не удалось подключиться к голосовому каналу.')
+					return
+		await rts(ctx)
+		name = re.findall(f"\"name\":\".*\",\"url\":\"{url}\"", list)[0].split(":\"")[1].split('\",')[0]
+		await success(ctx, f'Воспроизведение:\n```{name}```\nСсылка на радиостанцию: {url}')
+		player.play(FFmpegPCMAudio(url))
+
+	@commands.command(aliases=['np', 'nowplaying'])
+	async def now(self, ctx):
+		url = nowPlaying.get(ctx.guild.id)
+		if not url:
+			await error(ctx, 'Сейчас ничего не играет.')
+			return
+		if "youtu.be" not in url:
+			async with ctx.typing():
+				name = re.findall(f"\"name\":\".*\",\"url\":\"{url}\"", list)[0].split(":\"")[1].split('\",')[0]
+				e = discord.Embed(description=f'\📻 Сейчас играет:```{name}```\nСсылка на радиостанцию: {url}')
 			await ctx.send(embed=e)
 			return
-		mod = '`!!kick <member> [reason]` - кикнуть пользователя\n`!!ban <member> [reason]` - забанить пользователя\n`!!unban <user>` - разбанить пользователя\n`!!mute <member> [time] [reason]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние N сообщений в канале'
-		music = '`!!join [channel]` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение\n`!!repeat` - зациклить воспроизведение\n`!!now` - узнать, что сейчас играет'
-		utils = '`!!avatar [member]` - вывести аватар пользователя\n`!!yt <query>` - найти видео на YouTube\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!2b2t` - выводит данные о сервере 2b2t (очередь и т.п.)\n`!!skin <nick>` - выводит скин игрока Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить ваш текст внутри ембеда\n`!!timer <time>` - поставить таймер\n`!!user [user]` - информация о пользователе\n`!!server` - информация о сервере'
-		misc = '`!!neko` - случайная картинка с неко\n`!!nekogif` - случайная гифка с неко\n`!!cat` - случайная картинка с котом\n`!!nsfw [tag]` - хентай-картинка по тегу («lewd», если тег не указан)\n`!!invite` - добавить меня на свой сервер\n`!!about` - сведения о текущей версии бота\n`!!status` - статистика бота\n`!!bug <report>` - сообщить об ошибке'
-		pages = [mod, music, utils, misc]
-		titles = ['1. Модерация', '2. Музыка', '3. Утилиты', '4. Прочее']
-		e = discord.Embed()
-		e.add_field(name=titles[page - 1], value=pages[page - 1])
-		e.set_footer(text='© 2021 Sweety187 | Все права защищены.', icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
-		await ctx.send(embed=e)
-
-	@commands.command()
-	async def status(self, ctx):
-		uptime = int(time.time() - nullTime)
-		uptime = datetime.timedelta(seconds=uptime)
-		e = discord.Embed(title="Статистика бота")
-		e.add_field(name='Аптайм', value=uptime, inline=True)
-		e.add_field(name='Версия', value='s1.0.0', inline=True)
-		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
-		users = 0
-		for guild in self.bot.guilds:
-			users =+ guild.member_count
-		e.add_field(name='Пользователей', value=users, inline=True)
-		e.add_field(name='Нагрузка',
-					value=f'ЦП: {psutil.cpu_percent()}% ОЗУ: {psutil.virtual_memory().percent}%',
-					inline=True)
-		e.set_thumbnail(url="https://media.discordapp.net/attachments/832662675963510827/857631236355522650/logo.png")
-		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
-					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
-		await ctx.send(embed=e)
-
-	@commands.command()
-	async def about(self, ctx):
-		e=discord.Embed(title="Стабильная 1.0.0 от 11.07.2021 14:27 MSK")
-		fixed="ㆍИсправлены почти все возможные ошибки."
-		improved="ㆍИзменен интерфейс бота."
-		added="ㆍДобавлена возможность указывать причину для бана, кика, мута."
-		deleted="ㆍ."
-		e.add_field(name='Исправлено', value=fixed, inline=False)
-		e.add_field(name='Изменено', value=improved, inline=False)
-		e.add_field(name='Добавлено', value=added, inline=False)
-		#emb.add_field(name='Удалено', value=deleted, inline=False)
-		e.set_footer(text='© 2021 Sweety187 | Все права защищены.', icon_url = 'https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
-		await ctx.send(embed=e)
-
-	@commands.command()
-	@commands.is_nsfw()
-	async def nsfw(self, ctx, req='lewd'):
-		possible = ['feet', 'yuri', 'trap', 'futanari', 'hololewd', 'lewdkemo', 'solog',
-					'feetg', 'cum', 'erokemo', 'les', 'lewdk', 'ngif', 'lewd', 'gecg',
-					'eroyuri', 'eron', 'cum_jpg', 'bj', 'nsfw_neko_gif', 'solo', 'kemonomimi',
-					'anal', 'hentai', 'erofeet', 'keta', 'blowjob', 'pussy', 'tits', 'holoero',
-					'pussy_jpg', 'pwankg', 'classic', 'kuni', 'femdom', 'spank', 'erok', 'boobs',
-					'random_hentai_gif', 'smallboobs', 'ero']
-		if req not in possible:
-			tags = str(possible).replace('[\'', '`').replace('\', \'', '` `').replace('\']', '`')
-			await error(ctx, f'Использование: `!!nsfw [tag]`'
-							 f'\nДоступные теги: {tags}')
-			return
-		link = nekos.img(req)
-		e = discord.Embed()
-		e.set_image(url=link)
-		await ctx.send(embed=e)
-
-	@commands.command()
-	async def cat(self, ctx):
-		link = nekos.cat()
-		e = discord.Embed()
-		e.set_image(url=link)
-		await ctx.send(embed=e)
-
-	@commands.command()
-	async def neko(self, ctx):
-		link = nekos.img('neko')
-		e = discord.Embed()
-		e.set_image(url=link)
-		await ctx.send(embed=e)
-
-	@commands.command(aliases = ['ngif'])
-	@commands.is_nsfw()
-	async def nekogif(self, ctx):
-		link = nekos.img('ngif')
-		e = discord.Embed()
-		e.set_image(url=link)
-		await ctx.send(embed=e)
-
-	@commands.command()
-	@commands.cooldown(1, 1800, commands.BucketType.guild)
-	async def bug(self, ctx, *, message):
-		guild = discord.utils.get(bot.guilds, id=859735750555992064)
-		channel = discord.utils.get(guild.channels, id=859838257542201365)
-		e = discord.Embed(title="Сообщение об ошибке")
-		e.add_field(name="Автор", value=ctx.author, inline=False)
-		e.add_field(name="Сообщение", value=message, inline=False)
-		e.set_thumbnail(url="https://www.iconsdb.com/icons/download/white/error-6-64.png")
-		await channel.send(embed=e)
-		await success(ctx, 'Ваше сообщение было отправлено на [сервер поддержки](https://discord.gg/fj4vCdFVw3).')
-
-	@commands.command()
-	async def invite(self, ctx):
-		e = discord.Embed(description=f'<:info:863711569975967745> Добавить бота на свой сервер: '
-									  f'[[Нажми]]({bot_invite_link})')
+		async with ctx.typing():
+			ydl = youtube_dl.YoutubeDL({'format': 'worstaudio'})
+			ydl.add_default_info_extractors()
+			with ydl:
+				info = ydl.extract_info(url, download=False)
+				title = info.get('title', None)
+				duration = info.get('duration', None)
+				thumbnail = info.get('thumbnail', None)
+				likes = info.get('like_count', None)
+				views = info.get('view_count', None)
+			duration = datetime.timedelta(seconds=duration)
+		e = discord.Embed(description=f'<:youtube:861493156876386324> Сейчас играет:'
+									  f'```{title.replace("`", "")} ({duration})```'
+									  f'\nСсылка на видео: {url}')
+		e.set_image(url=thumbnail)
+		e.set_footer(text=f"Просмотров: {views}. Лайков: {likes}.")
 		await ctx.send(embed=e)
 
 
 def setup(bot):
-	bot.add_cog(misc(bot))
+	bot.add_cog(Music(bot))
+
+
+def voicestop(voice):
+	try:
+		if voice.is_playing():
+			voice.stop()
+	except:
+		pass
 
 
 async def success(ctx, message, delete_after=None, image=None):
@@ -139,3 +260,67 @@ async def success(ctx, message, delete_after=None, image=None):
 async def error(ctx, message):
 	e = discord.Embed(description='<a:error:862306041546407936> ' + message)
 	await ctx.send(embed=e)
+
+
+def is_connected(ctx):
+	voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+	return voice_client and voice_client.is_connected()
+
+
+def get_voice(ctx):
+	voice = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+	return voice
+
+
+def gc(ctx, channel):
+	if channel:
+		channel = get_channel(ctx, channel)
+		if channel:
+			return channel
+		channel = 1
+	else:
+		channel = ctx.author.voice.channel
+		if channel:
+			return channel
+		channel = 2
+	return channel
+
+
+async def rts(ctx):
+	try:
+		await ctx.guild.me.edit(suppress=False)
+	except:
+		pass
+
+
+def get_channel(ctx, channel):
+	if isinstance(channel, discord.VoiceChannel):
+		return channel
+	if isinstance(channel, discord.StageChannel):
+		return channel
+	_channel = discord.utils.get(ctx.guild.voice_channels, name=channel)
+	if _channel:
+		return _channel
+	_channel = discord.utils.get(ctx.guild.voice_channels, id=channel)
+	if _channel:
+		return _channel
+	_channel = discord.utils.get(ctx.guild.stage_channels, name=channel)
+	if _channel:
+		return _channel
+	_channel = discord.utils.get(ctx.guild.stage_channels, id=channel)
+	if _channel:
+		return _channel
+	try:
+		_channel = str(channel).split('<#')[1].split('>')[0]
+	except:
+		return False
+	_channel = discord.utils.get(ctx.guild.voice_channels, id=_channel)
+	if _channel:
+		return _channel
+	return False
+
+
+def ytsearch(query):
+	q = urllib.parse.urlencode({'search_query': query})
+	html = urlopen(f'http://www.youtube.com/results?{q}')
+	return re.findall(r'/watch\?v=(.{11})', html.read().decode())
