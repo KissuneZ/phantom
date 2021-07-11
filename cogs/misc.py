@@ -109,7 +109,7 @@ class misc(commands.Cog):
 	@commands.command()
 	@commands.cooldown(1, 1800, commands.BucketType.guild)
 	async def bug(self, ctx, *, message):
-		guild = discord.utils.get(bot.guilds, id=859735750555992064)
+		guild = discord.utils.get(self.bot.guilds, id=859735750555992064)
 		channel = discord.utils.get(guild.channels, id=859838257542201365)
 		e = discord.Embed(title="Сообщение об ошибке")
 		e.add_field(name="Автор", value=ctx.author, inline=False)
