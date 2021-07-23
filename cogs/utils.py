@@ -172,7 +172,7 @@ ID сервера:			 {guild.id}
 		if status == 'dnd':
 			status = 'Не беспокоить'
 		if status == 'idle':
-			status = 'Не активен'
+			status = 'Неактивен'
 		if status == 'online':
 			status = 'В сети'
 		if status == 'offline':
