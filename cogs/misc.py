@@ -63,7 +63,7 @@ class misc(commands.Cog):
 		e.add_field(name='Исправлено', value=fixed, inline=False)
 		#e.add_field(name='Изменено', value=improved, inline=False)
 		#e.add_field(name='Добавлено', value=added, inline=False)
-		emb.add_field(name='Удалено', value=deleted, inline=False)
+		e.add_field(name='Удалено', value=deleted, inline=False)
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 			     icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
 		await ctx.send(embed=e)
