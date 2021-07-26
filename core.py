@@ -10,9 +10,11 @@ import os
 import time
 import psutil
 import config
+
 intents = discord.Intents().all()
 bot = commands.Bot('!!', shard_count=1, case_insensitive=True, intents=intents)
 bot.remove_command('help')
+
 
 def do_load():
     bot.load_extension("cogs.mod")
@@ -27,7 +29,10 @@ def do_unload():
     bot.unload_extension("cogs.music")
     bot.unload_extension("cogs.misc")
 
+
 do_load()
+
+
 
 
 @bot.command()
@@ -59,21 +64,26 @@ async def fullreload(ctx):
     do_load()
     await success(ctx, f"Все модули перезагружены.")
 
+
 @bot.command()
 @commands.is_owner()
 async def shutdown(ctx):
     await ctx.message.add_reaction('✅')
     exit()
-    
+
+
 @bot.command()
 @commands.is_owner()
-@commands.cooldown(1, 15, commands.BucketType.user)
 async def restart(ctx):
     await ctx.message.add_reaction('✅')
     os.system('python core.py')
     exit()
 
+
+
+
 print('Регистрация ивентов...')
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -101,16 +111,12 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=e)
     return
 
-async def success(ctx, message, delete_after=None, image=None):
-    e = discord.Embed(description='<a:success:860037468279406592> ' + message)
-    if image:
-        e.set_thumbnail(url=image)
-    await ctx.send(embed=e, delete_after=delete_after)
 
 @bot.event
 async def on_message(message):
     if not message.author.bot:
         await bot.process_commands(message)
+
 
 @bot.event
 async def on_ready():
@@ -121,6 +127,14 @@ async def on_ready():
         time = re.sub("\.[0-9][0-9][0-9].*", "", str(datetime.datetime.now().time()))
         print(f'[{time}] Я на {len(bot.guilds)} серверах. CPU: {psutil.cpu_percent()}% RAM: {psutil.virtual_memory().percent}%')
         await asyncio.sleep(300)
+
+
+async def success(ctx, message, delete_after=None, image=None):
+    e = discord.Embed(description='<a:success:860037468279406592> ' + message)
+    if image:
+        e.set_thumbnail(url=image)
+    await ctx.send(embed=e, delete_after=delete_after)
+
 
 print('Выполняется вход...')
 bot.run(config.token())
