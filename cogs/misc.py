@@ -72,11 +72,11 @@ class misc(commands.Cog):
 	@commands.is_nsfw()
 	async def nsfw(self, ctx, req='lewd'):
 		possible = ['feet', 'yuri', 'trap', 'futanari', 'hololewd', 'lewdkemo', 'solog',
-					'feetg', 'cum', 'erokemo', 'les', 'lewdk', 'ngif', 'lewd', 'gecg',
-					'eroyuri', 'eron', 'cum_jpg', 'bj', 'nsfw_neko_gif', 'solo', 'anal',
-			    		'hentai', 'erofeet', 'keta', 'blowjob', 'pussy', 'tits', 'holoero',
-					'pussy_jpg', 'pwankg', 'classic', 'kuni', 'femdom', 'spank', 'erok', 'boobs',
-					'random_hentai_gif', 'smallboobs', 'ero']
+			    'feetg', 'cum', 'erokemo', 'les', 'lewdk', 'lewd', 'eroyuri', 'eron',
+			    'cum_jpg', 'bj', 'nsfw_neko_gif', 'solo', 'anal', 'hentai', 'erofeet',
+			    'keta', 'blowjob', 'pussy', 'tits', 'holoero', 'pussy_jpg', 'pwankg',
+			    'classic', 'kuni', 'femdom','erok', 'boobs', 'random_hentai_gif',
+			    'smallboobs', 'ero']
 		if req not in possible:
 			tags = str(possible).replace('[\'', '`').replace('\', \'', '` `').replace('\']', '`')
 			await error(ctx, f'Использование: `!!nsfw [tag]`'
