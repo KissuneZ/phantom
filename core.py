@@ -87,10 +87,9 @@ print('Регистрация ивентов...')
 
 @bot.event
 async def on_command_error(ctx, error):
+    msg = None
     if isinstance(error, commands.CommandNotFound):
         return
-    print(error)
-    msg = None
     if isinstance(error, commands.MissingPermissions):
         msg = f'У вас нет права {str(error).split("missing ")[1].split(" permission")[0]}!'
     if isinstance(error, commands.MissingRequiredArgument):
@@ -105,6 +104,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.MemberNotFound):
         msg = 'Пользователь не найден.'
     if isinstance(error, commands.errors.CommandInvokeError):
+        print(error)
         msg = f'Произошла ошибка. ```{error.original}```'
     if isinstance(error, commands.errors.ChannelNotFound):
         msg = 'Канал не найден.'
