@@ -48,7 +48,7 @@ class misc(commands.Cog):
 		uptime = datetime.timedelta(seconds=uptime)
 		e = discord.Embed(title="Статистика бота")
 		e.add_field(name='Аптайм', value=uptime, inline=True)
-		e.add_field(name='Версия', value='s1.0.1', inline=True)
+		e.add_field(name='Версия', value='s1.0.2', inline=True)
 		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
 		users = 0
 		for guild in self.bot.guilds:
