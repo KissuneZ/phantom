@@ -100,6 +100,8 @@ async def on_command_error(ctx, error):
         msg = f'Вы сможете использовать эту команду через {cooldown} секунд.'
     if isinstance(error, commands.errors.NSFWChannelRequired):
         msg = 'Эта команда доступна только в NSFW канале.'
+    if isinstance(error, commands.BadArgument):
+        msg = 'Несовместимый тип аргумента.'
     if isinstance(error, commands.errors.MemberNotFound):
         msg = 'Пользователь не найден.'
     if isinstance(error, commands.errors.CommandInvokeError):
@@ -109,7 +111,6 @@ async def on_command_error(ctx, error):
     if msg != None:
         e = discord.Embed(description='<a:error:862306041546407936> ' + msg)
         await ctx.send(embed=e)
-    return
 
 
 @bot.event
@@ -122,10 +123,9 @@ async def on_message(message):
 async def on_ready():
     print('Загрузка завершена!')
     while True:
-        s = f'!!help | [{len(bot.guilds)}]'
-        await bot.change_presence(activity=discord.Streaming(name=s, url="https://www.youtube.com/watch?v=wq0OaK6dMEo"))
-        time = re.sub("\.[0-9][0-9][0-9].*", "", str(datetime.datetime.now().time()))
-        print(f'[{time}] Я на {len(bot.guilds)} серверах. CPU: {psutil.cpu_percent()}% RAM: {psutil.virtual_memory().percent}%')
+        presence = f'!!help | [{len(bot.guilds)}]'
+        await bot.change_presence(activity=discord.Streaming(name=presence,
+                                                             url="https://www.youtube.com/watch?v=wq0OaK6dMEo"))
         await asyncio.sleep(300)
 
 
