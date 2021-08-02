@@ -11,70 +11,54 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=['purge'])
     @commands.has_permissions(manage_messages=True)
-    async def clear(self, ctx, amount):
-        """Очистить сообщения в этом канале"""
-        try:
-            amount = int(amount)
-            if amount <= 0:
-                await error(ctx, 'Некорректный аргумент.')
-                return
-        except:
-            await error(ctx, 'Аргумент должен быть числом.')
-            return
+    async def clear(self, ctx, amount: int):
+        if amount <= 0:
+            return await error(ctx, 'Некорректный аргумент.')
         if amount <= 100:
             try:
                 deleted = await ctx.message.channel.purge(limit=amount + 1)
+                deleted = len(deleted) - 1
             except:
-                await error(ctx, 'У меня нет прав для выполнения этой команды.')
-                return
-            await success(ctx, f'Удалено {len(deleted) - 1} сообщений.', 5)
+                return await error(ctx, 'У меня нет прав для выполнения этой команды.')
+            await success(ctx, f'Удалено {deleted} сообщений.', 5)
         else:
             await error(ctx, 'Нельзя удалить больше 100 сообщений.')
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason=""):
-        """Кикнуть пользователя"""
+    async def kick(self, ctx, member: discord.Member, *, reason=None):
         if member == ctx.author:
-            await error(ctx, 'Вы не можете кикнуть самого себя.')
-            return
+            return await error(ctx, 'Вы не можете кикнуть самого себя.')
         try:
-            await member.kick()
+            await member.kick(reason=f"{reason}. Кикнул: {ctx.author} [ID: {ctx.author.id}]")
         except:
-            await error(ctx, 'У меня нет прав для выполнения этой команды.')
-            return
+            return await error(ctx, 'У меня нет прав для выполнения этой команды.')
         await success(ctx, f'''Пользователь {member} кикнут.
         Причина: {reason}''' if reason else f'Пользователь {member} кикнут.')
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, *, reason=None):
-        """Забанить пользователя"""
         if member == ctx.author:
-            await error(ctx, 'Вы не можете забанить самого себя.')
-            return
+            return await error(ctx, 'Вы не можете забанить самого себя.')
         try:
-            await member.ban()
+            await member.ban(reason=f"{reason}. Забанил: {ctx.author} [ID: {ctx.author.id}]")
         except Forbidden:
-            await error(ctx, 'У меня нет прав для выполнения этой команды.')
-            return
+            return await error(ctx, 'У меня нет прав для выполнения этой команды.')
         await success(ctx, f"""Пользователь {member} забанен.
         					   Причина: """ + reason if reason else f"Пользователь {member} забанен.")
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, *, member):
-        """Разбанить пользователя"""
         try:
             banned_users = await ctx.guild.bans()
         except:
-            await error(ctx, 'У меня нет прав для выполнения этой команды.')
-            return
+            return await error(ctx, 'У меня нет прав для выполнения этой команды.')
         for member in banned_users:
             user = member.user
         if not user:
-            await error(ctx, 'Этот пользователь не был забанен.')
-            return
+            return await error(ctx, 'Этот пользователь не был забанен.')
         await ctx.guild.unban(user)
         await success(ctx, f'Пользователь {user} разбанен.')
 
@@ -82,13 +66,10 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def mute(self, ctx, member: discord.Member,
                    time=None, *, reason=None):
-        """Замутить пользователя"""
         if member == ctx.author:
             await error(ctx, 'Вы не можете замутить самого себя.')
             return
         muterole = get_muterole(ctx)
-        if muterole in member.roles:
-        	await error(ctx, 'Этот пользователь уже замучен.')
         me = ctx.guild.me
         _time = time
         time, timestring = get_time(time)
@@ -102,20 +83,17 @@ class Moderation(commands.Cog):
             try:
                 muterole = await guild.create_role(name="Muted")
             except:
-                await error(ctx, 'У меня нет прав для выполнения этой команды.')
-                return
+                return await error(ctx, 'У меня нет прав для выполнения этой команды.')
             position = me.top_role.position - 1
             await muterole.edit(permissions=permsissions, position=position)
         try:
             await member.add_roles(muterole)
         except:
-            await error(ctx, 'У меня нет прав для выполнения этой команды.')
-            return
+            return await error(ctx, 'У меня нет прав для выполнения этой команды.')
         r = "\nПричина: " + reason if reason else ""
         user = member.mention
-        if time <= 0:
-            await success(ctx, f'Пользователь {user} замучен навсегда. {r}')
-            return
+        if not time:
+            return await success(ctx, f'Пользователь {user} замучен навсегда. {r}')
         await success(ctx, f'Пользователь {user} замучен на {timestring}. {r}')
         await asyncio.sleep(time)
         await _unmute(member, muterole)
@@ -123,16 +101,13 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_messages=True)
     async def unmute(self, ctx, member: discord.Member):
-        """Размутить пользователя"""
         muterole = get_muterole(ctx)
         if not muterole in member.roles:
-        	await error(ctx, 'Этот пользователь уже размучен.')
-        	return
+        	return await error(ctx, 'Этот пользователь уже размучен.')
         try:
             await member.remove_roles(muterole)
         except:
-            await error(ctx, 'У меня нет прав для выполнения этой команды.')
-            return
+            return await error(ctx, 'У меня нет прав для выполнения этой команды.')
         await success(ctx, f'Пользователь {member.mention} размучен.')
 
 
@@ -195,7 +170,7 @@ def ctts(time):
         time = time.replace('d', ' дней ')
         if time[-1:] == ' ':
             time = time[:-1]
-    return time
+    return time.replace("-", "")
 
 
 async def _unmute(member, muterole):
