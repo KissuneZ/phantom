@@ -14,6 +14,12 @@ nsfw_tags = ['feet', 'yuri', 'trap', 'futanari', 'hololewd', 'lewdkemo', 'solog'
 			 'keta', 'blowjob', 'pussy', 'tits', 'holoero', 'pussy_jpg', 'pwankg',
 			 'classic', 'kuni', 'femdom', 'erok', 'boobs', 'random_hentai_gif',
 			 'smallboobs', 'ero']
+mod = '`!!kick <member> [reason]` - кикнуть пользователя\n`!!ban <member> [reason]` - забанить пользователя\n`!!unban <user>` - разбанить пользователя\n`!!mute <member> [time] [reason]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние N сообщений в канале'
+music = '`!!join [channel]` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение\n`!!repeat` - зациклить воспроизведение\n`!!now` - узнать, что сейчас играет'
+utils = '`!!avatar [member]` - вывести аватар пользователя\n`!!yt <query>` - найти видео на YouTube\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!2b2t` - выводит данные о сервере 2b2t (очередь и т.п.)\n`!!skin <nick>` - выводит скин игрока Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить ваш текст внутри ембеда\n`!!timer <time>` - поставить таймер\n`!!user [user]` - информация о пользователе\n`!!server` - информация о сервере'
+misc = '`!!neko` - случайная картинка с неко\n`!!nekogif` - случайная гифка с неко\n`!!cat` - случайная картинка с котом\n`!!nsfw [tag]` - хентай-картинка по тегу («lewd», если тег не указан)\n`!!invite` - добавить меня на свой сервер\n`!!about` - сведения о текущей версии бота\n`!!status` - статистика бота'
+pages = [mod, music, utils, misc]
+titles = ['1. Модерация', '2. Музыка', '3. Утилиты', '4. Прочее']
 
 
 class misc(commands.Cog):
@@ -28,14 +34,7 @@ class misc(commands.Cog):
 			e.add_field(name='Доступные категории команд', value=default)
 			e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 						 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
-			await ctx.send(embed=e)
-			return
-		mod = '`!!kick <member> [reason]` - кикнуть пользователя\n`!!ban <member> [reason]` - забанить пользователя\n`!!unban <user>` - разбанить пользователя\n`!!mute <member> [time] [reason]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние N сообщений в канале'
-		music = '`!!join [channel]` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение\n`!!repeat` - зациклить воспроизведение\n`!!now` - узнать, что сейчас играет'
-		utils = '`!!avatar [member]` - вывести аватар пользователя\n`!!yt <query>` - найти видео на YouTube\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!2b2t` - выводит данные о сервере 2b2t (очередь и т.п.)\n`!!skin <nick>` - выводит скин игрока Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить ваш текст внутри ембеда\n`!!timer <time>` - поставить таймер\n`!!user [user]` - информация о пользователе\n`!!server` - информация о сервере'
-		misc = '`!!neko` - случайная картинка с неко\n`!!nekogif` - случайная гифка с неко\n`!!cat` - случайная картинка с котом\n`!!nsfw [tag]` - хентай-картинка по тегу («lewd», если тег не указан)\n`!!invite` - добавить меня на свой сервер\n`!!about` - сведения о текущей версии бота\n`!!status` - статистика бота'
-		pages = [mod, music, utils, misc]
-		titles = ['1. Модерация', '2. Музыка', '3. Утилиты', '4. Прочее']
+			return await ctx.send(embed=e)
 		e = discord.Embed()
 		e.add_field(name=titles[page - 1], value=pages[page - 1])
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
@@ -115,7 +114,7 @@ class misc(commands.Cog):
 
 	@commands.command()
 	async def invite(self, ctx):
-		e = discord.Embed(description=f'<:info:863711569975967745> Добавить бота на свой сервер: '
+		e = discord.Embed(description=f'<a:info:863711569975967745> Добавить бота на свой сервер: '
 						  f'[[Нажми]]({bot_invite_link})')
 		await ctx.send(embed=e)
 
