@@ -19,6 +19,7 @@ FFMPEG_OPTIONS = {'before_options': __bopts__,
 				  'options': '-vn'}
 __data__ = requests.get("https://espradio.ru/stream_list.json")
 list = __data__.text
+ydl_opts = {'format': 'worstaudio'}
 
 
 class Music(commands.Cog):
@@ -68,7 +69,8 @@ class Music(commands.Cog):
 	async def play(self, ctx, *, query):
 		if await voice_check(ctx, ignore_not_connected=True):
 			return
-		e = discord.Embed(description=f"Выполняется поиск на YouTube:```{query}```")
+		_query = query.replace("`", "`‎")
+		e = discord.Embed(description=f"Выполняется поиск на YouTube:```{_query}```")
 		msg = await ctx.send(embed=e)
 		async with ctx.typing():
 			results = ytsearch(query)
@@ -90,7 +92,6 @@ class Music(commands.Cog):
 				return
 		await rts(ctx)
 		async with ctx.typing():
-			ydl_opts = {'format': 'worstaudio'}
 			ydl = youtube_dl.YoutubeDL(ydl_opts)
 			ydl.add_default_info_extractors()
 			with ydl:
@@ -205,7 +206,7 @@ class Music(commands.Cog):
 			await ctx.send(embed=e)
 			return
 		async with ctx.typing():
-			ydl = youtube_dl.YoutubeDL({'format': 'worstaudio'})
+			ydl = youtube_dl.YoutubeDL(ydl_opts)
 			ydl.add_default_info_extractors()
 			with ydl:
 				info = ydl.extract_info(url, download=False)
