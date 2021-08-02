@@ -59,10 +59,7 @@ class utils(commands.Cog):
 	async def ping(self, ctx, ip):
 		async with ctx.typing():
 			e = get_status(ip)
-		lastmsg = await ctx.send(embed=e)
-		await lastmsg.add_reaction('📌')
-		await success(ctx, f'Каждые 5 минут информация о сервере будет обновляться.'
-						   f'\nЧтобы прекратить этот процесс, удалите сообщение.', 5)
+		await ctx.send(embed=e)
 
 	@commands.command(name="2b2t", aliases=['2b'])
 	async def _2b2t(self, ctx):
