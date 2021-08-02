@@ -33,8 +33,6 @@ def do_unload():
 do_load()
 
 
-
-
 @bot.command()
 @commands.is_owner()
 async def load(ctx, extension):
@@ -80,18 +78,13 @@ async def restart(ctx):
     exit()
 
 
-
-
-print('Регистрация ивентов...')
-
-
 @bot.event
 async def on_command_error(ctx, error):
     msg = None
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingPermissions):
-        msg = f'У вас нет права {str(error).split("missing ")[1].split(" permission")[0]}!'
+        msg = f'У вас нет прав для вызова этой команды.'
     if isinstance(error, commands.MissingRequiredArgument):
         msg = 'Вы не задали необходимый аргумент.'
     if isinstance(error, commands.CommandOnCooldown):
@@ -121,7 +114,7 @@ async def on_message(message):
 
 @bot.event
 async def on_ready():
-    print('Загрузка завершена!')
+    print(f'Выполнен вход: {bot.user}')
     while True:
         presence = f'!!help | [{len(bot.guilds)}]'
         await bot.change_presence(activity=discord.Streaming(name=presence,
