@@ -46,13 +46,13 @@ class misc(commands.Cog):
 	async def status(self, ctx):
 		uptime = int(time.time() - nullTime)
 		uptime = datetime.timedelta(seconds=uptime)
-		e = discord.Embed(title="Статистика бота")
+		e = discord.Embed(title="Состояние бота")
 		e.add_field(name='Аптайм', value=uptime, inline=True)
 		e.add_field(name='Версия', value='s1.0.2', inline=True)
 		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
 		users = 0
 		for guild in self.bot.guilds:
-			users = users + guild.member_count
+			users += guild.member_count
 		e.add_field(name='Пользователей', value=users, inline=True)
 		e.add_field(name='Нагрузка',
 					value=f'ЦП: {psutil.cpu_percent()}% ОЗУ: {psutil.virtual_memory().percent}%',
