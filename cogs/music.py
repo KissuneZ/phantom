@@ -76,10 +76,9 @@ class Music(commands.Cog):
 			results = ytsearch(query)
 		try:
 			url = f'https://youtu.be/{results[0]}'
-		except IndexError:
+		except:
 			await msg.delete()
-			await error(ctx, 'По вашему запросу ничего не найдено.')
-			return
+			return await error(ctx, 'По вашему запросу ничего не найдено.')
 		channel = ctx.author.voice.channel
 		voice = get_voice(ctx)
 		if is_connected(ctx):
@@ -88,8 +87,7 @@ class Music(commands.Cog):
 			try:
 				player = await channel.connect(timeout=1, reconnect=True)
 			except:
-				await error(ctx, f'Не удалось подключиться к <#{channel.id}>!')
-				return
+				return await error(ctx, f'Не удалось подключиться к <#{channel.id}>!')
 		await rts(ctx)
 		async with ctx.typing():
 			ydl = youtube_dl.YoutubeDL(ydl_opts)
@@ -103,7 +101,7 @@ class Music(commands.Cog):
 			if nowPlaying.get(ctx.guild.id) != url:
 				nowPlaying[ctx.guild.id] = url
 			duration = datetime.timedelta(seconds=duration)
-			i = True
+		i = True
 		while loops.get(ctx.guild.id) or i:
 			voicestop(voice)
 			player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
@@ -158,20 +156,17 @@ class Music(commands.Cog):
 		if await voice_check(ctx):
 			return
 		key = ctx.guild.id
-		loops[key] = loops.get(key)
-		if not loops[key]:
-			loops[key] = True
-			await success(ctx, 'Воспроизведение зациклено.')
-			return
-		if loops[key]:
+		if loops.get(key):
 			loops[key] = False
 			await success(ctx, 'Стандартный режим воспроизведения.')
+		else:
+			loops[key] = True
+			return await success(ctx, 'Воспроизведение зациклено.')
 
 	@commands.command()
 	async def radio(self, ctx, url):
-		if not url or not re.findall(f"\"url\":\"{url}\"", list):
-			await error(ctx, 'Использование: `!!radio <url>`\nСписок станций: https://espradio.ru/stream_list')
-			return
+		if not re.findall(f"\"url\":\"{url}\"", list):
+			return await error(ctx, 'Использование: `!!radio <url>`\nСписок станций: https://espradio.ru/stream_list')
 		if await voice_check(ctx, ignore_not_connected=True):
 			return
 		voice = get_voice(ctx)
@@ -186,8 +181,7 @@ class Music(commands.Cog):
 				try:
 					player = await channel.connect(timeout=1, reconnect=True) 
 				except:
-					await error(ctx, 'Не удалось подключиться к голосовому каналу.')
-					return
+					return await error(ctx, 'Не удалось подключиться к голосовому каналу.')
 		await rts(ctx)
 		name = re.findall(f"\"name\":\".*\",\"url\":\"{url}\"", list)[0].split(":\"")[1].split('\",')[0]
 		await success(ctx, f'Воспроизведение:\n```{name}```\nСсылка на радиостанцию: {url}')
@@ -197,14 +191,12 @@ class Music(commands.Cog):
 	async def now(self, ctx):
 		url = nowPlaying.get(ctx.guild.id)
 		if not url:
-			await error(ctx, 'Сейчас ничего не играет.')
-			return
+			return await error(ctx, 'Сейчас ничего не играет.')
 		if "youtu.be" not in url:
 			async with ctx.typing():
 				name = re.findall(f"\"name\":\".*\",\"url\":\"{url}\"", list)[0].split(":\"")[1].split('\",')[0]
 				e = discord.Embed(description=f'\📻 Сейчас играет:```{name}```\nСсылка на радиостанцию: {url}')
-			await ctx.send(embed=e)
-			return
+			return await ctx.send(embed=e)
 		async with ctx.typing():
 			ydl = youtube_dl.YoutubeDL(ydl_opts)
 			ydl.add_default_info_extractors()
@@ -216,7 +208,7 @@ class Music(commands.Cog):
 				likes = info.get('like_count', None)
 				views = info.get('view_count', None)
 			duration = datetime.timedelta(seconds=duration)
-		e = discord.Embed(description=f'<:youtube:861493156876386324> Сейчас играет:'
+		e = discord.Embed(description=f'<a:youtube:861493156876386324> Сейчас играет:'
 									  f'```{title.replace("`", "`‎")} ({duration})```'
 									  f'\nСсылка на видео: {url}')
 		e.set_image(url=thumbnail)
