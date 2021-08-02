@@ -107,12 +107,11 @@ class Music(commands.Cog):
 			voicestop(voice)
 			player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
 			if i:
-				title = title.replace("`", "\`").replace("*", "\*")
-				title = title.replace("~", "\~").replace("_", "\_")
+				title = title.replace("`", "`‎")
 				await msg.delete()
 				await success(ctx, f'''Воспроизведение:
-									   ```{title} ({duration})```
-									   Ссылка на видео: {url}''')
+						       ```{title} ({duration})```
+						       Ссылка на видео: {url}''')
 				i = False
 			await asyncio.sleep(dur + 1)
 			if nowPlaying.get(ctx.guild.id) != url or not is_connected(ctx):
@@ -217,7 +216,7 @@ class Music(commands.Cog):
 				views = info.get('view_count', None)
 			duration = datetime.timedelta(seconds=duration)
 		e = discord.Embed(description=f'<:youtube:861493156876386324> Сейчас играет:'
-									  f'```{title.replace("`", "")} ({duration})```'
+									  f'```{title.replace("`", "`‎")} ({duration})```'
 									  f'\nСсылка на видео: {url}')
 		e.set_image(url=thumbnail)
 		e.set_footer(text=f"Просмотров: {views}. Лайков: {likes}.")
