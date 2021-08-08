@@ -124,6 +124,7 @@ class Music(commands.Cog):
 		voice = get_voice(ctx)
 		if nowPlaying.get(ctx.guild.id):
 			voice.stop()
+			nowPlaying[ctx.guild.id] = None
 			await success(ctx, 'Воспроизведение остановлено.')
 		else:
 			await error(ctx, 'Сейчас ничего не играет.')
