@@ -85,7 +85,7 @@ class Moderation(commands.Cog):
             except:
                 return await error(ctx, 'У меня нет прав для выполнения этой команды.')
             position = me.top_role.position - 1
-            await muterole.edit(permissions=permsissions, position=position)
+            await muterole.edit(permissions=permissions, position=position)
         try:
             await member.add_roles(muterole)
         except:
