@@ -182,7 +182,7 @@ async def _unmute(member, muterole):
 
 def muteperms():
     permissions = discord.Permissions()
-    permsissions.update(send_messages=False,
+    permissions.update(send_messages=False,
                         change_nickname=False,
                         speak=False,
                         request_to_speak=False,
