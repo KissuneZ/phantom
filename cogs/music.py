@@ -28,7 +28,6 @@ class Music(commands.Cog):
 
 	@commands.command(aliases=['summon'])
 	async def join(self, ctx, *, channel=None):
-		"""Подключиться к голосовому каналу"""
 		channel = gc(ctx, channel)
 		if channel == 1:
 			return await error(ctx, 'Канал не найден.')
@@ -61,6 +60,7 @@ class Music(commands.Cog):
 		if await voice_check(ctx):
 			return
 		voice = get_voice(ctx)
+		nowPlaying[ctx.guild.id] = None
 		await voice.disconnect()
 		await success(ctx, 'Отключен от голосового канала.')
 			
@@ -115,16 +115,15 @@ class Music(commands.Cog):
 			await asyncio.sleep(dur + 1)
 			if nowPlaying.get(ctx.guild.id) != url or not is_connected(ctx):
 				break
+		nowPlaying[ctx.guild.id] = None
 
 	@commands.command(aliases=['skip'])
 	async def stop(self, ctx):
 		if await voice_check(ctx):
 			return
 		voice = get_voice(ctx)
-		if is_connected(ctx) and voice.is_playing():
+		if nowPlaying.get(ctx.guild.id):
 			voice.stop()
-			if loops.get(ctx.guild.id) and nowPlaying.get(ctx.guild.id):
-				nowPlaying[ctx.guild.id] = None
 			await success(ctx, 'Воспроизведение остановлено.')
 		else:
 			await error(ctx, 'Сейчас ничего не играет.')
@@ -190,7 +189,7 @@ class Music(commands.Cog):
 	@commands.command(aliases=['np', 'nowplaying'])
 	async def now(self, ctx):
 		url = nowPlaying.get(ctx.guild.id)
-		if not url:
+		if not url or not is_connected(ctx):
 			return await error(ctx, 'Сейчас ничего не играет.')
 		if "youtu.be" not in url:
 			async with ctx.typing():
@@ -208,7 +207,7 @@ class Music(commands.Cog):
 				likes = info.get('like_count', None)
 				views = info.get('view_count', None)
 			duration = datetime.timedelta(seconds=duration)
-		e = discord.Embed(description=f'<a:youtube:861493156876386324> Сейчас играет:'
+		e = discord.Embed(description=f'<:youtube:861493156876386324> Сейчас играет:'
 									  f'```{title.replace("`", "`‎")} ({duration})```'
 									  f'\nСсылка на видео: {url}')
 		e.set_image(url=thumbnail)
