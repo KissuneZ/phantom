@@ -101,6 +101,8 @@ async def on_command_error(ctx, error):
         msg = f'Произошла ошибка. ```{error.original}```'
     if isinstance(error, commands.errors.ChannelNotFound):
         msg = 'Канал не найден.'
+    if isinstance(ctx.channel, discord.DMChannel):
+        msg = 'Эта команда не может быть выполнена в канале личных сообщений.'
     if msg != None:
         e = discord.Embed(description='<a:error:862306041546407936> ' + msg)
         await ctx.send(embed=e)
