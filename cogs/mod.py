@@ -79,7 +79,7 @@ class Moderation(commands.Cog):
             reason = str(_time) + ' ' + reason
         if not get_muterole(ctx):
             guild = ctx.guild
-            permsissions = muteperms()
+            permissions = muteperms()
             try:
                 muterole = await guild.create_role(name="Muted")
             except:
