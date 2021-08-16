@@ -67,8 +67,7 @@ class Moderation(commands.Cog):
     async def mute(self, ctx, member: discord.Member,
                    time=None, *, reason=None):
         if member == ctx.author:
-            await error(ctx, 'Вы не можете замутить самого себя.')
-            return
+            return await error(ctx, 'Вы не можете замутить самого себя.')
         muterole = get_muterole(ctx)
         me = ctx.guild.me
         _time = time
