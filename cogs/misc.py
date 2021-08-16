@@ -47,7 +47,7 @@ class misc(commands.Cog):
 		uptime = datetime.timedelta(seconds=uptime)
 		e = discord.Embed(title="Состояние бота")
 		e.add_field(name='Аптайм', value=uptime, inline=True)
-		e.add_field(name='Версия', value='s1.0.2', inline=True)
+		e.add_field(name='Версия', value='s1.0.3', inline=True)
 		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
 		users = 0
 		for guild in self.bot.guilds:
@@ -63,14 +63,14 @@ class misc(commands.Cog):
 
 	@commands.command()
 	async def about(self, ctx):
-		e = discord.Embed(title="Стабильная 1.0.2 от 01.08.2021 17:52 [UTC+3]")
-		fixed = "ㆍИсправлена ошибка в команде `!!ban`."
+		e = discord.Embed(title="Стабильная 1.0.3 от 16.08.2021 17:03 [UTC+3]")
+		fixed = "ㆍИсправления мелких ошибок."
 		improved = "ㆍКоманды управления музыкой теперь можно использовать только находясь с ботом в одном голосовом канале.\nㆍУлучшена работа со временем.\nㆍУпрощен алгоритм работы некоторых команд для увеличения производительности."
 		added = "ㆍДобавлена ошибка о несовместимом типе аргумента.\nㆍРеакция для повторного выполнения команды `!!nsfw`."
 		deleted = "ㆍКоманда `!!bug`, вместе с сервером поддержки."
 		e.add_field(name='Исправлено', value=fixed, inline=False)
-		e.add_field(name='Изменено', value=improved, inline=False)
-		e.add_field(name='Добавлено', value=added, inline=False)
+		#e.add_field(name='Изменено', value=improved, inline=False)
+		#e.add_field(name='Добавлено', value=added, inline=False)
 		#e.add_field(name='Удалено', value=deleted, inline=False)
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
@@ -105,7 +105,6 @@ class misc(commands.Cog):
 		await ctx.send(embed=e)
 
 	@commands.command(aliases=['ngif'])
-	@commands.is_nsfw()
 	async def nekogif(self, ctx):
 		link = nekos.img('ngif')
 		e = discord.Embed()
@@ -114,7 +113,7 @@ class misc(commands.Cog):
 
 	@commands.command()
 	async def invite(self, ctx):
-		e = discord.Embed(description=f'<a:info:863711569975967745> Добавить бота на свой сервер: '
+		e = discord.Embed(description=f'<:info:863711569975967745> Добавить бота на свой сервер: '
 						  f'[[Нажми]]({bot_invite_link})')
 		await ctx.send(embed=e)
 
@@ -136,7 +135,6 @@ async def error(ctx, message):
 
 
 async def reaction_listener(bot, msg, emoji):
-
 	def check(reaction, user):
 		if user == bot.user:
 			return False
