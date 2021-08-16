@@ -12,6 +12,7 @@ import requests
 import youtube_dl
 import re
 import json
+
 loops = {}
 nowPlaying = {}
 __bopts__ = '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 10'
@@ -50,8 +51,7 @@ class Music(commands.Cog):
 				msg = 'Не удалось подключиться к голосовому каналу.'
 				e = True
 		if e:
-			await error(ctx, msg)
-			return
+			return await error(ctx, msg)
 		await rts(ctx)
 		await success(ctx, msg)
 
@@ -63,7 +63,6 @@ class Music(commands.Cog):
 		nowPlaying[ctx.guild.id] = None
 		await voice.disconnect()
 		await success(ctx, 'Отключен от голосового канала.')
-			
 
 	@commands.command(aliases=['p'])
 	async def play(self, ctx, *, query):
@@ -87,24 +86,25 @@ class Music(commands.Cog):
 			try:
 				player = await channel.connect(timeout=1, reconnect=True)
 			except:
-				return await error(ctx, f'Не удалось подключиться к <#{channel.id}>!')
+				return await error(ctx, f'Не удалось подключиться к голосовому каналу.')
 		await rts(ctx)
 		async with ctx.typing():
 			ydl = youtube_dl.YoutubeDL(ydl_opts)
 			ydl.add_default_info_extractors()
 			with ydl:
 				info = ydl.extract_info(url, download=False)
-				URL = info['formats'][0]['url']
+				source_url = info['formats'][0]['url']
 				title = info.get('title', None)
 				duration = info.get('duration', None)
 			dur = duration
-			if nowPlaying.get(ctx.guild.id) != url:
-				nowPlaying[ctx.guild.id] = url
+			key = ctx.guild.id
+			if nowPlaying.get(key) != url:
+				nowPlaying[key] = url
 			duration = datetime.timedelta(seconds=duration)
 		i = True
-		while loops.get(ctx.guild.id) or i:
+		while loops.get(key) or i:
 			voicestop(voice)
-			player.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+			player.play(FFmpegPCMAudio(source_url, **FFMPEG_OPTIONS))
 			if i:
 				title = title.replace("`", "`‎")
 				await msg.delete()
@@ -113,18 +113,19 @@ class Music(commands.Cog):
 						       Ссылка на видео: {url}''')
 				i = False
 			await asyncio.sleep(dur + 1)
-			if nowPlaying.get(ctx.guild.id) != url or not is_connected(ctx):
+			if nowPlaying.get(key) != url or not is_connected(ctx):
 				break
-		nowPlaying[ctx.guild.id] = None
+		nowPlaying[key] = None
 
 	@commands.command(aliases=['skip'])
 	async def stop(self, ctx):
 		if await voice_check(ctx):
 			return
 		voice = get_voice(ctx)
-		if nowPlaying.get(ctx.guild.id):
+		key = ctx.guild.id
+		if nowPlaying.get(key):
 			voice.stop()
-			nowPlaying[ctx.guild.id] = None
+			nowPlaying[key] = None
 			await success(ctx, 'Воспроизведение остановлено.')
 		else:
 			await error(ctx, 'Сейчас ничего не играет.')
@@ -156,12 +157,13 @@ class Music(commands.Cog):
 		if await voice_check(ctx):
 			return
 		key = ctx.guild.id
-		if loops.get(key):
+		state = loops.get(key)
+		if state:
 			loops[key] = False
-			await success(ctx, 'Стандартный режим воспроизведения.')
+			return await success(ctx, 'Стандартный режим воспроизведения.')
 		else:
 			loops[key] = True
-			return await success(ctx, 'Воспроизведение зациклено.')
+			await success(ctx, 'Воспроизведение зациклено.')
 
 	@commands.command()
 	async def radio(self, ctx, url):
@@ -170,8 +172,9 @@ class Music(commands.Cog):
 		if await voice_check(ctx, ignore_not_connected=True):
 			return
 		voice = get_voice(ctx)
-		if nowPlaying.get(ctx.guild.id) != url:
-			nowPlaying[ctx.guild.id] = url
+		key = ctx.guild.id
+		if nowPlaying.get(key) != url:
+			nowPlaying[key] = url
 		if ctx.message.author.voice:
 			channel = ctx.author.voice.channel
 			if is_connected(ctx):
@@ -185,7 +188,7 @@ class Music(commands.Cog):
 		await rts(ctx)
 		name = re.findall(f"\"name\":\".*\",\"url\":\"{url}\"", list)[0].split(":\"")[1].split('\",')[0]
 		await success(ctx, f'Воспроизведение:\n```{name}```\nСсылка на радиостанцию: {url}')
-		player.play(FFmpegPCMAudio(url))
+		player.play(FFmpegPCMAudio(url, **FFMPEG_OPTIONS))
 
 	@commands.command(aliases=['np', 'nowplaying'])
 	async def now(self, ctx):
