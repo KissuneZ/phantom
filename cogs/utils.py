@@ -69,20 +69,19 @@ class utils(commands.Cog):
 		queue = int(queue.text.split(',')[1].replace(']', ''))
 		prio = requests.get('https://api.2b2t.dev/prioq')
 		prio = int(prio.text.split(',')[1].replace(',null]', ''))
-		url = f'https://mc.api.srvcontrol.xyz/server/status?ip=2b2t.org'
+		url = 'https://mc.api.srvcontrol.xyz/server/status?ip=2b2t.org'
 		data = requests.get(url).text
 		status = json.loads(data)
 		await msg.delete()
 		if not status['online'] or status['error']:
 			await msg.delete()
-			await error(ctx, 'Не удалось установить соединение с сервером.')
-			return
+			return await error(ctx, 'Не удалось установить соединение с сервером.')
 		online = status['players']['now']
 		ingame = online - int(queue)
 		info = f'''В очереди: {queue}.
-				   В приоритетной очереди: {prio}.
-				   На сервере: {ingame}.
-				   Общий онлайн: {online}.'''
+В приоритетной очереди: {prio}.
+На сервере: {ingame}.
+Общий онлайн: {online}.'''
 		e = discord.Embed(title='2b2t', description=info)
 		e.set_thumbnail(url=f'https://eu.mc-api.net/v3/server/favicon/2b2t.org')
 		await ctx.send(embed=e)
