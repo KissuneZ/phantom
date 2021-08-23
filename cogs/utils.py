@@ -124,17 +124,17 @@ class utils(commands.Cog):
 			region = str(guild.region).upper()
 		e = discord.Embed()
 		info = f"""```
-ID сервера:			 {guild.id}
-Дата создания:		  {created}
-Владелец:			   {owner}
-Участников:			 {members}
-Категорий:			  {categories}
-Текстовых каналов:	  {tchannels}
-Голосовых каналов:	  {vchannels}
-Ролей:				  {roles}
-Уровень буста:		  {blevel}
-Бустов:				 {bcount}
-Регион:				 {region}
+ID сервера:              {guild.id}
+Дата создания:           {created}
+Владелец:                {owner}
+Участников:              {members}
+Категорий:               {categories}
+Текстовых каналов:       {tchannels}
+Голосовых каналов:       {vchannels}
+Ролей:                   {roles}
+Уровень буста:           {blevel}
+Бустов:                  {bcount}
+Регион:                  {region}
 ```"""
 		e.add_field(name=name, value=info)
 		e.set_thumbnail(url=icon)
@@ -155,15 +155,15 @@ ID сервера:			 {guild.id}
 			status = 'Не в сети'
 		activity = user.activity
 		info = f"""```
-Пользователь:		{str(user).replace("`", "")}
-ID:				  {user.id}
-Статус:			  {status}
-Активность:		  {activity if activity else 'Нет'}
-Бот:				 {"Да" if user.bot else "Нет"}
-Роль:				{str(user.top_role).replace("`", "")}
-Ролей:			   {len(user.roles)-1}
-Зарегистрирован:	 {user.created_at.strftime("%d.%m.%Y %H:%M:%S")}
-Присоединился:	   {user.joined_at.strftime("%d.%m.%Y %H:%M:%S")}
+Пользователь:              {str(user).replace("`", "")}
+ID:                        {user.id}
+Статус:                    {status}
+Активность:                {activity if activity else 'Нет'}
+Бот:                       {"Да" if user.bot else "Нет"}
+Роль:                      {str(user.top_role).replace("`", "")}
+Ролей:                     {len(user.roles)-1}
+Зарегистрирован:           {user.created_at.strftime("%d.%m.%Y %H:%M:%S")}
+Присоединился:             {user.joined_at.strftime("%d.%m.%Y %H:%M:%S")}
 ```"""
 		e = discord.Embed(title=user, description=info)
 		e.set_thumbnail(url=user.avatar_url)
