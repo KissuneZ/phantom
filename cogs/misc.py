@@ -49,7 +49,7 @@ class misc(commands.Cog):
 		uptime = datetime.timedelta(seconds=uptime)
 		e = discord.Embed(title="Состояние бота")
 		e.add_field(name='Аптайм', value=uptime, inline=True)
-		e.add_field(name='Версия', value='s1.0.3', inline=True)
+		e.add_field(name='Версия', value='s1.0.4', inline=True)
 		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
 		users = 0
 		for guild in self.bot.guilds:
@@ -65,14 +65,14 @@ class misc(commands.Cog):
 
 	@commands.command()
 	async def about(self, ctx):
-		e = discord.Embed(title="Стабильная 1.0.3 от 16.08.2021 17:03 [UTC+3]")
+		e = discord.Embed(title="Стабильная 1.0.4 от 23.08.2021 18:24 [UTC+3]")
 		fixed = "ㆍИсправления мелких ошибок."
 		improved = "ㆍКоманды управления музыкой теперь можно использовать только находясь с ботом в одном голосовом канале.\nㆍУлучшена работа со временем.\nㆍУпрощен алгоритм работы некоторых команд для увеличения производительности."
-		added = "ㆍДобавлена ошибка о несовместимом типе аргумента.\nㆍРеакция для повторного выполнения команды `!!nsfw`."
+		added = "ㆍКоманда `!!watch` для совместного просмотра видео."
 		deleted = "ㆍКоманда `!!bug`, вместе с сервером поддержки."
-		e.add_field(name='Исправлено', value=fixed, inline=False)
+		#e.add_field(name='Исправлено', value=fixed, inline=False)
 		#e.add_field(name='Изменено', value=improved, inline=False)
-		#e.add_field(name='Добавлено', value=added, inline=False)
+		e.add_field(name='Добавлено', value=added, inline=False)
 		#e.add_field(name='Удалено', value=deleted, inline=False)
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
