@@ -80,7 +80,7 @@ class misc(commands.Cog):
 
 	@commands.command()
 	async def watch(self, ctx, channel: [discord.VoiceChannel, discord.StageChannel]=None):
-		if await voice_check(ctx):
+		if await voice_check(ctx, ignore_not_connected=True):
 			return
 		if not channel:
 			channel = ctx.author.voice.channel
