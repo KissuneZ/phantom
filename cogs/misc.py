@@ -4,6 +4,7 @@ import nekos
 import time
 import datetime
 import psutil
+from discordTogether import DiscordTogether
 
 
 bot_invite_link = "https://discord.com/api/oauth2/authorize?client_id=837282453654732810&permissions=8&scope=bot"
@@ -17,7 +18,7 @@ nsfw_tags = ['feet', 'yuri', 'trap', 'futanari', 'hololewd', 'lewdkemo', 'solog'
 mod = '`!!kick <member> [reason]` - кикнуть пользователя\n`!!ban <member> [reason]` - забанить пользователя\n`!!unban <user>` - разбанить пользователя\n`!!mute <member> [time] [reason]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние N сообщений в канале'
 music = '`!!join [channel]` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение\n`!!repeat` - зациклить воспроизведение\n`!!now` - узнать, что сейчас играет'
 utils = '`!!avatar [member]` - вывести аватар пользователя\n`!!yt <query>` - найти видео на YouTube\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!2b2t` - выводит данные о сервере 2b2t (очередь и т.п.)\n`!!skin <nick>` - выводит скин игрока Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить ваш текст внутри ембеда\n`!!timer <time>` - поставить таймер\n`!!user [user]` - информация о пользователе\n`!!server` - информация о сервере'
-misc = '`!!neko` - случайная картинка с неко\n`!!nekogif` - случайная гифка с неко\n`!!cat` - случайная картинка с котом\n`!!nsfw [tag]` - хентай-картинка по тегу («lewd», если тег не указан)\n`!!invite` - добавить меня на свой сервер\n`!!about` - сведения о текущей версии бота\n`!!status` - статистика бота'
+misc = '`!!neko` - случайная картинка с неко\n`!!nekogif` - случайная гифка с неко\n`!!cat` - случайная картинка с котом\n`!!watch [channel]` - смотреть YouTube Together **[Бета]**\n`!!nsfw [tag]` - хентай-картинка по тегу («lewd», если тег не указан)\n`!!invite` - добавить меня на свой сервер\n`!!about` - сведения о текущей версии бота\n`!!status` - статистика бота'
 pages = [mod, music, utils, misc]
 titles = ['1. Модерация', '2. Музыка', '3. Утилиты', '4. Прочее']
 
@@ -25,6 +26,7 @@ titles = ['1. Модерация', '2. Музыка', '3. Утилиты', '4. �
 class misc(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
+		self.dt = DiscordTogether(bot)
 
 	@commands.command()
 	async def help(self, ctx, page=0):
@@ -75,6 +77,18 @@ class misc(commands.Cog):
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
 		await ctx.send(embed=e)
+
+	@commands.command()
+	async def watch(self, ctx, channel: [discord.VoiceChannel, discord.StageChannel]=None):
+		if await voice_check(ctx):
+			return
+		if not channel:
+			channel = ctx.author.voice.channel
+		try:
+			link = await self.dt.create_link(channel.id, 'youtube')
+		except:
+			return await error(ctx, 'Не удалось создать сессию YouTube Together.')
+		await success(ctx, f"Нажмите [сюда]({link}), чтобы начать просмотр.")
 
 	@commands.command()
 	@commands.is_nsfw()
@@ -131,7 +145,7 @@ async def success(ctx, message, delete_after=None, image=None):
 
 async def error(ctx, message):
 	e = discord.Embed(description='<a:error:862306041546407936> ' + message)
-	await ctx.send(embed=e)
+	return await ctx.send(embed=e)
 
 
 async def reaction_listener(bot, msg, emoji):
@@ -150,3 +164,18 @@ async def reaction_listener(bot, msg, emoji):
 			await msg.remove_reaction(emoji, bot.user)
 		except:
 			pass
+
+async def voice_check(ctx, ignore_not_connected=False):
+	if not ctx.author.voice:
+		return await error(ctx, 'Вы должны быть в голосовом канале для вызова этой команды.')
+	if not ctx.guild.me.voice and not ignore_not_connected:
+		return await error(ctx, 'Я не подключен к голосовому каналу на этом сервере.')
+	if not is_connected(ctx):
+		return
+	if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+		return await error(ctx, 'Вы должны находиться в том же голосовом канале, что и бот.')
+
+
+def is_connected(ctx):
+	voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+	return voice_client and voice_client.is_connected()
