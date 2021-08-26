@@ -77,7 +77,7 @@ class misc(commands.Cog):
 		#e.add_field(name='Удалено', value=deleted, inline=False)
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
-		await ctx.send(eFix 2mbed=e)
+		await ctx.send(embed=e)
 
 	@commands.command()
 	async def watch(self, ctx, *, channel: Union[discord.VoiceChannel, discord.StageChannel]=None):
