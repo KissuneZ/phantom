@@ -5,6 +5,7 @@ import time
 import datetime
 import psutil
 from discordTogether import DiscordTogether
+from typing import Union
 
 
 bot_invite_link = "https://discord.com/api/oauth2/authorize?client_id=837282453654732810&permissions=8&scope=bot"
@@ -76,10 +77,10 @@ class misc(commands.Cog):
 		#e.add_field(name='Удалено', value=deleted, inline=False)
 		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
-		await ctx.send(embed=e)
+		await ctx.send(eFix 2mbed=e)
 
 	@commands.command()
-	async def watch(self, ctx, *, channel: [discord.VoiceChannel, discord.StageChannel]=None):
+	async def watch(self, ctx, *, channel: Union[discord.VoiceChannel, discord.StageChannel]=None):
 		if await voice_check(ctx, ignore_not_connected=True) and not channel:
 			return
 		if not channel:
