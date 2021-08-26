@@ -69,7 +69,8 @@ class Music(commands.Cog):
 		if await voice_check(ctx, ignore_not_connected=True):
 			return
 		_query = query.replace("`", "`‎")
-		e = discord.Embed(description=f"Выполняется поиск на YouTube:```{_query}```")
+		e = discord.Embed(description=f"""Выполняется поиск на YouTube:
+```{_query}```""")
 		msg = await ctx.send(embed=e)
 		async with ctx.typing():
 			results = ytsearch(query)
@@ -108,9 +109,7 @@ class Music(commands.Cog):
 			if i:
 				title = title.replace("`", "`‎")
 				await msg.delete()
-				await success(ctx, f'''Воспроизведение:
-						       ```{title} ({duration})```
-						       Ссылка на видео: {url}''')
+				await success(ctx, f'Воспроизведение:\n```{title} ({duration})```\nСсылка на видео: {url}')
 				i = False
 			await asyncio.sleep(dur + 1)
 			if nowPlaying.get(key) != url or not is_connected(ctx):
@@ -211,9 +210,7 @@ class Music(commands.Cog):
 				likes = info.get('like_count', None)
 				views = info.get('view_count', None)
 			duration = datetime.timedelta(seconds=duration)
-		e = discord.Embed(description=f'<:youtube:861493156876386324> Сейчас играет:'
-									  f'```{title.replace("`", "`‎")} ({duration})```'
-									  f'\nСсылка на видео: {url}')
+		e = discord.Embed(description=f'<:youtube:861493156876386324> Сейчас играет:\n```{title.replace("`", "`‎")} ({duration})```\nСсылка на видео: {url}')
 		e.set_image(url=thumbnail)
 		e.set_footer(text=f"Просмотров: {views}. Лайков: {likes}.")
 		await ctx.send(embed=e)
@@ -303,7 +300,7 @@ def get_channel(ctx, channel):
 
 def ytsearch(query):
 	q = urllib.parse.urlencode({'search_query': query})
-	html = urlopen(f'http://www.youtube.com/results?{q}')
+	html = urlopen(f'https://www.youtube.com/results?{q}')
 	return re.findall(r'/watch\?v=(.{11})', html.read().decode())
 
 
