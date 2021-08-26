@@ -79,8 +79,8 @@ class misc(commands.Cog):
 		await ctx.send(embed=e)
 
 	@commands.command()
-	async def watch(self, ctx, channel: [discord.VoiceChannel, discord.StageChannel]=None):
-		if await voice_check(ctx, ignore_not_connected=True):
+	async def watch(self, ctx, *, channel: [discord.VoiceChannel, discord.StageChannel]=None):
+		if await voice_check(ctx, ignore_not_connected=True) and not channel:
 			return
 		if not channel:
 			channel = ctx.author.voice.channel
