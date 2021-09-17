@@ -31,7 +31,7 @@ class misc(commands.Cog):
 
 	@commands.command()
 	async def help(self, ctx, page=0):
-		if not page or page > 4:
+		if page <= 0 or page > 4:
 			default = '`1.` Модерация\n`2.` Музыка\n`3.` Утилиты\n`4.` Прочее\n\nИспользуйте `!!help [page]` для просмотра списка команд из этой категории.'
 			e = discord.Embed()
 			e.add_field(name='Доступные категории команд', value=default)
