@@ -12,7 +12,7 @@ __skinopts__ += "&phi=20&time=90&shadow_color=000&shadow_radius=0"
 __skinopts__ += "&shadow_x=0&shadow_y=0&front_and_back=true"
 
 
-class utils(commands.Cog):
+class Utils(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
@@ -26,7 +26,7 @@ class utils(commands.Cog):
 
 	@commands.command()
 	async def say(self, ctx, *, text):
-		if re.search(".*@.*", str(text)):
+		if "@" in text:
 			if not ctx.author.guild_permissions.mention_everyone:
 				return await error(ctx, 'Ваше сообщение содержит упоминание.')
 		await ctx.send(text)
@@ -69,7 +69,7 @@ class utils(commands.Cog):
 		queue = int(queue.text.split(',')[1].replace(']', ''))
 		prio = requests.get('https://api.2b2t.dev/prioq')
 		prio = int(prio.text.split(',')[1].replace(',null]', ''))
-		url = 'https://mc.api.srvcontrol.xyz/server/status?ip=2b2t.org'
+		url = 'https://mcapi.us/server/status?ip=2b2t.org'
 		data = requests.get(url).text
 		status = json.loads(data)
 		await msg.delete()
@@ -90,19 +90,19 @@ class utils(commands.Cog):
 	async def skin(self, ctx, nick):
 		if len(re.findall("[^A-Za-z0-9_]", nick)):
 			return await error(ctx, 'Заданный никнейм сдержит недопустимые символы.')
-		url = f"https://ru.namemc.com/profile/{nick}.1"
+		url = f"https://ru.namemc.com/profile/{nick}"
 		async with ctx.typing():
 			guild = discord.utils.get(self.bot.guilds, id=832662675963510824)
 			channel = discord.utils.get(guild.channels, id=859408699985887244)
-			await channel.send(url)
+			m = await channel.send(url)
 			await asyncio.sleep(1)
-			message = await channel.send(url)
-		if "Поиск" in message.embeds[0].title:
+			m = await channel.fetch_message(m.id)
+		if "Поиск" in m.embeds[0].title:
 			return await error(ctx, 'Лицензионного аккаунта с таким ником нет.')
-		skin = message.embeds[0].thumbnail.url
-		name = message.embeds[0].title.split(' | Учётная запись Minecraft')[0]
+		skin = m.embeds[0].thumbnail.url
+		name = m.embeds[0].title.split(' | Учётная запись Minecraft')[0]
 		skin = skin.split("&width=")[0] + __skinopts__
-		e = discord.Embed(title=f"Скин {name}")
+		e = discord.Embed(title=f"Скин игрока {name}")
 		e.set_image(url=skin)
 		await ctx.send(embed=e)
 
@@ -191,7 +191,7 @@ ID:                        {user.id}
 
 
 def setup(bot):
-	bot.add_cog(utils(bot))
+	bot.add_cog(Utils(bot))
 
 
 async def success(ctx, message, delete_after=None, image=None):
@@ -207,7 +207,7 @@ async def error(ctx, message):
 
 
 def get_status(ip):
-	url = f'https://mc.api.srvcontrol.xyz/server/status?ip={ip}'
+	url = f'https://mcapi.us/server/status?ip={ip}'
 	data = requests.get(url).text
 	status = json.loads(data)
 	if status['online'] and not status['error']:
