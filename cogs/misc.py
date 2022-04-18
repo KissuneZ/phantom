@@ -16,15 +16,15 @@ nsfw_tags = ['feet', 'yuri', 'trap', 'futanari', 'hololewd', 'lewdkemo', 'solog'
 			 'keta', 'blowjob', 'pussy', 'tits', 'holoero', 'pussy_jpg', 'pwankg',
 			 'classic', 'kuni', 'femdom', 'erok', 'boobs', 'random_hentai_gif',
 			 'smallboobs', 'ero']
-mod = '`!!kick <member> [reason]` - кикнуть пользователя\n`!!ban <member> [reason]` - забанить пользователя\n`!!unban <user>` - разбанить пользователя\n`!!mute <member> [time] [reason]` - замутить пользователя\n`!!unmute <member>` - размутить пользователя\n`!!clear <amount>` - удалить последние N сообщений в канале'
-music = '`!!join [channel]` - присоединиться к голосовому каналу\n`!!leave` - покуинуть голосовой канал\n`!!play <query>` - воспроизвести музыку с YouTube\n`!!radio <stream>` - проигрывать радио в голосовом канале\n`!!stop` - остановить воспроизведение\n`!!pause` - приостановить воспроизведение\n`!!resume` - продолжить воспроизведение\n`!!repeat` - зациклить воспроизведение\n`!!now` - узнать, что сейчас играет'
-utils = '`!!avatar [member]` - вывести аватар пользователя\n`!!yt <query>` - найти видео на YouTube\n`!!ping <ip>` - выводит информацию о сервере Minecraft\n`!!2b2t` - выводит данные о сервере 2b2t (очередь и т.п.)\n`!!skin <nick>` - выводит скин игрока Minecraft\n`!!say <text>` - отправить сообщение от имени бота\n`!!embed <text>` - отправить ваш текст внутри ембеда\n`!!timer <time>` - поставить таймер\n`!!user [user]` - информация о пользователе\n`!!server` - информация о сервере'
-misc = '`!!neko` - случайная картинка с неко\n`!!nekogif` - случайная гифка с неко\n`!!cat` - случайная картинка с котом\n`!!watch [channel]` - смотреть YouTube Together **[Бета]**\n`!!nsfw [tag]` - хентай-картинка по тегу («lewd», если тег не указан)\n`!!invite` - добавить меня на свой сервер\n`!!about` - сведения о текущей версии бота\n`!!status` - статистика бота'
+mod = '`!!kick <member> [reason]` — кикнуть пользователя\n`!!ban <member> [reason]` — забанить пользователя\n`!!unban <user>` — разбанить пользователя\n`!!mute <member> [time] [reason]` — замьютить пользователя\n`!!unmute <member>` — размьютить пользователя\n`!!clear <amount>` — удалить последние N сообщений в канале'
+music = '`!!join [channel]` — присоединиться к голосовому каналу\n`!!leave` — покуинуть голосовой канал\n`!!play <query>` — воспроизвести музыку с YouTube\n`!!radio <stream>` — проигрывать радио в голосовом канале\n`!!stop` — остановить воспроизведение\n`!!pause` — приостановить воспроизведение\n`!!resume` — продолжить воспроизведение\n`!!repeat` — зациклить воспроизведение\n`!!now` — узнать, что сейчас играет'
+utils = '`!!avatar [member]` — вывести аватар пользователя\n`!!yt <query>` — найти видео на YouTube\n`!!ping <ip>` — выводит информацию о сервере Minecraft\n`!!2b2t` — выводит данные о сервере 2b2t (очередь и т.п.)\n`!!skin <nick>` — выводит скин игрока Minecraft\n`!!say <text>` — отправить сообщение от имени бота\n`!!embed <text>` — отправить ваш текст внутри ембеда\n`!!timer <time>` — поставить таймер\n`!!user [user]` — информация о пользователе\n`!!server` — информация о сервере'
+misc = '`!!neko` — случайная картинка с неко\n`!!nekogif` — случайная гифка с неко\n`!!cat` — случайная картинка с котом\n`!!ytt [channel]` — смотреть YouTube Together\n`!!nsfw [tag]` — хентай-картинка по тегу\n`!!invite` — добавить меня на свой сервер\n`!!about` — сведения о текущей версии бота\n`!!status` — статистика бота'
 pages = [mod, music, utils, misc]
 titles = ['1. Модерация', '2. Музыка', '3. Утилиты', '4. Прочее']
 
 
-class misc(commands.Cog):
+class Misc(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 		self.dt = DiscordTogether(bot)
@@ -35,12 +35,12 @@ class misc(commands.Cog):
 			default = '`1.` Модерация\n`2.` Музыка\n`3.` Утилиты\n`4.` Прочее\n\nИспользуйте `!!help [page]` для просмотра списка команд из этой категории.'
 			e = discord.Embed()
 			e.add_field(name='Доступные категории команд', value=default)
-			e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
+			e.set_footer(text='© KissuneZ, 2022 | Все права защищены.',
 						 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
 			return await ctx.send(embed=e)
 		e = discord.Embed()
 		e.add_field(name=titles[page - 1], value=pages[page - 1])
-		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
+		e.set_footer(text='© KissuneZ, 2022 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
 		await ctx.send(embed=e)
 
@@ -50,7 +50,7 @@ class misc(commands.Cog):
 		uptime = datetime.timedelta(seconds=uptime)
 		e = discord.Embed(title="Состояние бота")
 		e.add_field(name='Аптайм', value=uptime, inline=True)
-		e.add_field(name='Версия', value='s1.0.4', inline=True)
+		e.add_field(name='Версия', value='s1.0.4.1', inline=True)
 		e.add_field(name='Серверов', value=len(self.bot.guilds), inline=True)
 		users = 0
 		for guild in self.bot.guilds:
@@ -60,27 +60,27 @@ class misc(commands.Cog):
 			    value=f'ЦП: {psutil.cpu_percent()}% ОЗУ: {psutil.virtual_memory().percent}%',
 			    inline=True)
 		e.set_thumbnail(url="https://media.discordapp.net/attachments/832662675963510827/857631236355522650/logo.png")
-		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
+		e.set_footer(text='© KissuneZ, 2022 | Все права защищены.',
 			     icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
 		await ctx.send(embed=e)
 
 	@commands.command()
 	async def about(self, ctx):
-		e = discord.Embed(title="Стабильная 1.0.4 от 23.08.2021 18:24 [UTC+3]")
+		e = discord.Embed(title="Стабильная 1.0.4.1 от 18.04.2022")
 		fixed = "ㆍИсправления мелких ошибок."
-		improved = "ㆍКоманды управления музыкой теперь можно использовать только находясь с ботом в одном голосовом канале.\nㆍУлучшена работа со временем.\nㆍУпрощен алгоритм работы некоторых команд для увеличения производительности."
+		improved = "ㆍНебольшие поправки в орфографии и пунктации.\nㆍКоманда `!!watch` переименована в `!!ytt`."
 		added = "ㆍКоманда `!!watch` для совместного просмотра видео."
 		deleted = "ㆍКоманда `!!bug`, вместе с сервером поддержки."
-		#e.add_field(name='Исправлено', value=fixed, inline=False)
-		#e.add_field(name='Изменено', value=improved, inline=False)
-		e.add_field(name='Добавлено', value=added, inline=False)
+		e.add_field(name='Исправлено', value=fixed, inline=False)
+		e.add_field(name='Изменено', value=improved, inline=False)
+		#e.add_field(name='Добавлено', value=added, inline=False)
 		#e.add_field(name='Удалено', value=deleted, inline=False)
-		e.set_footer(text='© 2021 Sweety187 | Все права защищены.',
+		e.set_footer(text='© KissuneZ, 2022 | Все права защищены.',
 					 icon_url='https://media.discordapp.net/attachments/832662675963510827/855762014010081300/b5222c5b.jpg')
 		await ctx.send(embed=e)
 
 	@commands.command()
-	async def watch(self, ctx, *, channel: Union[discord.VoiceChannel, discord.StageChannel]=None):
+	async def ytt(self, ctx, *, channel: Union[discord.VoiceChannel, discord.StageChannel]=None):
 		if await voice_check(ctx, ignore_not_connected=True) and not channel:
 			return
 		if not channel:
@@ -134,7 +134,7 @@ class misc(commands.Cog):
 
 
 def setup(bot):
-	bot.add_cog(misc(bot))
+	bot.add_cog(Misc(bot))
 
 
 async def success(ctx, message, delete_after=None, image=None):
