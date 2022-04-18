@@ -67,7 +67,7 @@ class Moderation(commands.Cog):
     async def mute(self, ctx, member: discord.Member,
                    time=None, *, reason=None):
         if member == ctx.author:
-            return await error(ctx, 'Вы не можете замутить самого себя.')
+            return await error(ctx, 'Вы не можете замьютить самого себя.')
         muterole = get_muterole(ctx)
         me = ctx.guild.me
         _time = time
@@ -92,8 +92,8 @@ class Moderation(commands.Cog):
         r = "\nПричина: " + reason if reason else ""
         user = member.mention
         if not time:
-            return await success(ctx, f'Пользователь {user} замучен навсегда. {r}')
-        await success(ctx, f'Пользователь {user} замучен на {timestring}. {r}')
+            return await success(ctx, f'Пользователь {user} замьючен навсегда. {r}')
+        await success(ctx, f'Пользователь {user} замьючен на {timestring}. {r}')
         await asyncio.sleep(time)
         await _unmute(member, muterole)
 
@@ -102,12 +102,12 @@ class Moderation(commands.Cog):
     async def unmute(self, ctx, member: discord.Member):
         muterole = get_muterole(ctx)
         if not muterole in member.roles:
-        	return await error(ctx, 'Этот пользователь уже размучен.')
+        	return await error(ctx, 'Этот пользователь уже размьючен.')
         try:
             await member.remove_roles(muterole)
         except:
             return await error(ctx, 'У меня нет прав для выполнения этой команды.')
-        await success(ctx, f'Пользователь {member.mention} размучен.')
+        await success(ctx, f'Пользователь {member.mention} размьючен.')
 
 
 def setup(bot):
