@@ -32,7 +32,7 @@ class Misc(commands.Cog):
 	@commands.command()
 	async def help(self, ctx, page=0):
 		if page <= 0 or page > 4:
-			default = '`1.` Модерация\n`2.` Музыка\n`3.` Утилиты\n`4.` Прочее\n\nИспользуйте `!!help [page]` для просмотра списка команд из этой категории.'
+			default = '`1.` Модерация\n`2.` Музыка\n`3.` Утилиты\n`4.` Прочее\n\n> :warning: Некоторые функции могут работать некорректно, так как разработка данного бота была прекращена.\n\nИспользуйте `!!help [page]` для просмотра списка команд из этой категории.'
 			e = discord.Embed()
 			e.add_field(name='Доступные категории команд', value=default)
 			e.set_footer(text='© KissuneZ, 2022 | Все права защищены.',
@@ -94,6 +94,7 @@ class Misc(commands.Cog):
 	@commands.command()
 	@commands.is_nsfw()
 	async def nsfw(self, ctx, tag='lewd'):
+		return await error(ctx, 'Команда отключена, так как Nekos API больше не предоставляет NSFW-изображения.')
 		if tag not in nsfw_tags:
 			tags = f"`{'`, `'.join(nsfw_tags)}`"
 			return await error(ctx, f'Использование: `!!nsfw [tag]`'
